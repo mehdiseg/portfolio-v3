@@ -7,8 +7,8 @@ export function TopologyFallback() {
   const color = (c: string) => (c === 'core' ? 'var(--muted)' : `var(${CATEGORIES[c as keyof typeof CATEGORIES].cssVar})`)
 
   return (
-    <div className="absolute inset-0 flex items-start justify-center pt-24 md:items-center md:justify-end md:pt-0 md:pr-[6vw]">
-      <svg viewBox="-220 -200 440 400" className="h-[52vh] w-auto max-w-[92vw] opacity-90 md:h-[70vh]" role="presentation">
+    <div className="absolute inset-0 flex items-start justify-center pt-20 lg:items-center lg:justify-end lg:pt-0 lg:pr-[6vw]">
+      <svg viewBox="-220 -200 440 400" className="h-[50svh] w-auto max-w-[92vw] opacity-90 lg:h-[70vh]" role="presentation">
         {TOPO_LINKS.map(([a, b]) => {
           const A = pos.get(a)!
           const B = pos.get(b)!

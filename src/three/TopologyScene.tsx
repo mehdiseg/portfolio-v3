@@ -124,12 +124,14 @@ function ViewOffset() {
   const size = useThree((s) => s.size)
   useEffect(() => {
     const { width: w, height: h } = size
-    if (w > 900) {
+    // même seuil que la mise en page du hero (lg = 1024 px)
+    if (w >= 1024) {
       camera.setViewOffset(w, h, -w * 0.22, h * 0.085, w, h)
       camera.position.setLength(w / h > 1.9 ? 11.6 : 12.6)
     } else {
-      camera.setViewOffset(w, h, 0, h * 0.04, w, h)
-      camera.position.setLength(w / h < 0.85 ? 17 : 13)
+      // le haut du canvas passe sous la barre de navigation : on descend légèrement la scène
+      camera.setViewOffset(w, h, 0, -h * 0.05, w, h)
+      camera.position.setLength(w / h < 0.85 ? 17.5 : 13.5)
     }
     camera.updateProjectionMatrix()
     return () => camera.clearViewOffset()

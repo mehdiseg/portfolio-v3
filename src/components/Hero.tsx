@@ -36,7 +36,7 @@ export function Hero() {
 
   return (
     <section id="home" ref={ref} className="relative min-h-[100svh] overflow-hidden" aria-label="Présentation">
-      <div className="absolute inset-x-0 top-0 h-[62svh] md:inset-0 md:h-auto" aria-hidden="true">
+      <div className="absolute inset-x-0 top-0 h-[62svh] lg:inset-0 lg:h-auto" aria-hidden="true">
         {show3D ? (
           <Suspense fallback={<TopologyFallback />}>
             <TopologyScene
@@ -56,7 +56,7 @@ export function Hero() {
       </div>
       <div className="hero-veil pointer-events-none absolute inset-0" />
 
-      <div className="pointer-events-none relative z-10 mx-auto flex min-h-[100svh] max-w-[1240px] flex-col justify-end px-5 pt-[56svh] pb-12 md:px-8 md:pt-28 md:pb-16">
+      <div className="pointer-events-none relative z-10 mx-auto flex min-h-[100svh] max-w-[1240px] flex-col justify-end px-5 pt-[56svh] pb-12 md:px-8 lg:pt-28 lg:pb-16">
         <div className="max-w-[44rem]">
           <motion.p {...fade(0.1)} className="pointer-events-auto mb-6 inline-flex items-center gap-2.5 rounded-full border border-line bg-deep/70 px-3.5 py-1.5 text-sm text-muted backdrop-blur">
             <span className="status-dot" aria-hidden="true" />

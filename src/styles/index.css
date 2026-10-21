@@ -166,7 +166,7 @@ html.lenis body {
     linear-gradient(0deg, var(--ink) 0%, transparent 28%);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1023px) {
   .hero-veil {
     background: linear-gradient(180deg, transparent 0, transparent 40svh, var(--ink) 60svh);
   }
