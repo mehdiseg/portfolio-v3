@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+<meta charset="UTF-8">
+<title>Tableau de synthèse des réalisations professionnelles — Mehdi Seghier</title>
+<style>
+    @page {
+        size: A4 landscape;
+        margin: 10mm 9mm;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', Calibri, Arial, sans-serif;
+        color: #1a1a2e;
+        font-size: 9.2pt;
+        line-height: 1.35;
+    }
+
+    .accent { color: #4b46c9; }
+
+    /* ===== EN-TÊTE ===== */
+    .doc-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 2px solid #1a1a2e;
+        padding-bottom: 5px;
+        margin-bottom: 6px;
+    }
+
+    .doc-header h1 {
+        font-size: 13pt;
+        margin: 0 0 2px;
+        letter-spacing: 0.02em;
+    }
+
+    .doc-header h2 {
+        font-size: 11pt;
+        font-weight: 700;
+        margin: 0;
+        color: #4b46c9;
+    }
+
+    .doc-session {
+        text-align: right;
+        font-size: 9.5pt;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .doc-session small {
+        display: block;
+        font-weight: 400;
+        font-size: 7.3pt;
+        color: #555570;
+        max-width: 190px;
+        margin-top: 2px;
+        line-height: 1.3;
+    }
+
+    /* ===== CHAMPS CANDIDAT ===== */
+    .fields {
+        display: grid;
+        grid-template-columns: 1.6fr 1fr 1.3fr 1.5fr;
+        gap: 4px 18px;
+        margin-bottom: 7px;
+        font-size: 9pt;
+    }
+
+    .fields .field {
+        border-bottom: 1px solid #999;
+        padding-bottom: 2px;
+    }
+
+    .fields .field b { margin-right: 4px; }
+
+    .fields .field .val { color: #4b46c9; font-weight: 600; }
+    .fields .field .todo { color: #b34a4a; font-style: italic; font-weight: 500; }
+
+    .option-boxes { display: inline-flex; gap: 12px; margin-left: 4px; }
+    .option-boxes span { display: inline-flex; align-items: center; gap: 3px; }
+    .box { display: inline-block; width: 10px; height: 10px; border: 1.4px solid #1a1a2e; text-align: center; line-height: 9px; font-size: 8pt; font-weight: 900; }
+    .box.checked { background: #4b46c9; border-color: #4b46c9; color: #fff; }
+
+    /* ===== NOTE DE VERSION ===== */
+    .draft-note {
+        background: #fff4e5;
+        border: 1px solid #e0a94c;
+        border-radius: 3px;
+        padding: 4px 8px;
+        font-size: 7.6pt;
+        margin-bottom: 6px;
+        line-height: 1.4;
+    }
+
+    /* ===== TABLEAU PRINCIPAL ===== */
+    table.matrix {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+    table.matrix th,
+    table.matrix td {
+        border: 1px solid #333;
+        padding: 3px 4px;
+        vertical-align: top;
+        text-align: left;
+        font-size: 8pt;
+        overflow-wrap: break-word;
+    }
+
+    table.matrix col.col-real { width: 26%; }
+    table.matrix col.col-periode { width: 8%; }
+    table.matrix col.col-comp { width: 11%; }
+
+    thead th {
+        background: #1a1a2e;
+        color: #fff;
+        font-size: 7.3pt;
+        font-weight: 700;
+        text-align: center;
+        vertical-align: middle;
+        line-height: 1.25;
+    }
+
+    thead th.th-real,
+    thead th.th-periode {
+        background: #4b46c9;
+    }
+
+    tbody tr.section-row th {
+        background: #e4e2fb;
+        color: #2a1f70;
+        text-align: left;
+        font-size: 8.6pt;
+        font-weight: 800;
+        padding: 3px 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+
+    td.cell-real { font-weight: 600; }
+    td.cell-real .sub {
+        display: block;
+        font-weight: 400;
+        color: #555570;
+        font-size: 7.3pt;
+        margin-top: 1px;
+    }
+
+    td.cell-periode {
+        text-align: center;
+        white-space: nowrap;
+        font-size: 7.6pt;
+    }
+    td.cell-periode.todo { color: #b34a4a; font-style: italic; }
+
+    td.cell-x {
+        text-align: center;
+        font-weight: 900;
+        color: #1f8f4e;
+        font-size: 10pt;
+    }
+    td.cell-x.tentative {
+        color: #b8860b;
+        font-style: italic;
+        font-weight: 700;
+        font-size: 8.5pt;
+    }
+    td.cell-x.empty {
+        background: repeating-linear-gradient(135deg, #f2f2f7, #f2f2f7 4px, #e8e8f0 4px, #e8e8f0 8px);
+    }
+
+    /* ===== LEGENDE / BAS DE PAGE ===== */
+    .legend {
+        margin-top: 7px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 5px 14px;
+        font-size: 7.1pt;
+        line-height: 1.35;
+    }
+
+    .legend .comp-block b {
+        display: block;
+        color: #4b46c9;
+        font-size: 7.4pt;
+        margin-bottom: 1px;
+    }
+
+    .legend .comp-block ul { margin: 0; padding-left: 11px; }
+
+    .key-row {
+        display: flex;
+        gap: 22px;
+        margin-top: 6px;
+        font-size: 7.4pt;
+        align-items: center;
+        border-top: 1px solid #999;
+        padding-top: 4px;
+    }
+
+    .key-row span { display: inline-flex; align-items: center; gap: 4px; }
+    .key-x { color: #1f8f4e; font-weight: 900; }
+    .key-x2 { color: #b8860b; font-weight: 700; font-style: italic; }
+
+    .watch-note {
+        margin-top: 5px;
+        font-size: 7.3pt;
+        border: 1px solid #b34a4a;
+        background: #fbe9e9;
+        border-radius: 3px;
+        padding: 4px 8px;
+        line-height: 1.4;
+    }
+
+    .watch-note b { color: #9c2b2b; }
+
+    .ok-note {
+        margin-top: 5px;
+        font-size: 7.3pt;
+        border: 1px solid #2f8f5b;
+        background: #e9f7ef;
+        border-radius: 3px;
+        padding: 4px 8px;
+        line-height: 1.4;
+    }
+
+    .ok-note b { color: #1f6b42; }
+</style>
+</head>
+
+<body>
+
+<div class="doc-header">
+    <div>
+        <h1>BTS SERVICES INFORMATIQUES AUX ORGANISATIONS</h1>
+        <h2>Tableau de synthèse des réalisations professionnelles</h2>
+    </div>
+    <div class="doc-session">
+        SESSION 2027
+        <small>Document de travail établi à partir du modèle officiel Annexe VI‑1
+            (circulaire nationale d'organisation, session 2026) — à vérifier auprès
+            du centre de formation lors de la publication de la circulaire session 2027.</small>
+    </div>
+</div>
+
+<div class="fields">
+    <div class="field"><b>NOM et prénom :</b><span class="val">SEGHIER Mehdi</span></div>
+    <div class="field"><b>N° candidat :</b><span class="todo">à compléter (fourni par le centre d'examen)</span></div>
+    <div class="field"><b>Centre de formation :</b><span class="val">Iris Campus, Nice</span></div>
+    <div class="field">
+        <b>Option :</b>
+        <span class="option-boxes">
+            <span><span class="box checked">X</span> SISR</span>
+            <span><span class="box">&nbsp;</span> SLAM</span>
+        </span>
+    </div>
+    <div class="field" style="grid-column: 1 / -1;">
+        <b>Adresse URL du portfolio :</b>
+        <span class="val">https://mehdiseg.github.io/</span>
+    </div>
+</div>
+
+<div class="draft-note">
+    <b>⚠ Version de travail.</b> Les cases cochées ci-dessous sont une proposition de couverture des compétences,
+    établie à partir des projets décrits par le candidat ; les marquages <span class="key-x2">x&nbsp;?</span>
+    sont des hypothèses à confirmer. Les périodes marquées <i>« à compléter »</i> doivent être renseignées avec
+    les dates réelles avant le dépôt du dossier. Ce document est à faire valider par le formateur référent SISR
+    avant remise officielle.
+</div>
+
+<table class="matrix">
+    <colgroup>
+        <col class="col-real">
+        <col class="col-periode">
+        <col class="col-comp"><col class="col-comp"><col class="col-comp">
+        <col class="col-comp"><col class="col-comp"><col class="col-comp">
+    </colgroup>
+    <thead>
+        <tr>
+            <th class="th-real">Réalisations professionnelles<br>(intitulé et productions associées)</th>
+            <th class="th-periode">Période</th>
+            <th>① Gérer le patrimoine informatique</th>
+            <th>② Répondre aux incidents et aux demandes d'assistance et d'évolution</th>
+            <th>③ Développer la présence en ligne de l'organisation</th>
+            <th>④ Travailler en mode projet</th>
+            <th>⑤ Mettre à disposition des utilisateurs un service informatique</th>
+            <th>⑥ Organiser son développement professionnel</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr class="section-row"><th colspan="8">Réalisations en cours de formation (Iris Campus)</th></tr>
+
+        <tr>
+            <td class="cell-real">Administration Linux &amp; scripting
+                <span class="sub">Commandes Linux, automatisation Bash/Shell, gestion de versions avec Git</span></td>
+            <td class="cell-periode">2025-2026</td>
+            <td class="cell-x">X</td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+        </tr>
+
+        <tr>
+            <td class="cell-real">Infrastructure réseau
+                <span class="sub">Plan d'adressage IP, modèle OSI, configuration IOS Cisco, routing, monitoring, sécurité réseau</span></td>
+            <td class="cell-periode">2025-2026</td>
+            <td class="cell-x">X</td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x">X</td>
+            <td class="cell-x empty"></td>
+        </tr>
+
+        <tr>
+            <td class="cell-real">Administration système
+                <span class="sub">Virtualisation d'OS, serveurs DNS, DHCP, FTP, VoIP, VPN, configuration de matériel réseau</span></td>
+            <td class="cell-periode">2025-2026</td>
+            <td class="cell-x">X</td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x">X</td>
+            <td class="cell-x empty"></td>
+        </tr>
+
+        <tr>
+            <td class="cell-real">Sécurisation des données
+                <span class="sub">Solutions NAS &amp; RAID, stratégie de sauvegarde et de restauration (backup)</span></td>
+            <td class="cell-periode">2025-2026</td>
+            <td class="cell-x">X</td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+        </tr>
+
+        <tr>
+            <td class="cell-real">Gestion de parc informatique et de tickets (GLPI)
+                <span class="sub">Installation, configuration et exploitation de GLPI : inventaire du matériel, suivi des demandes</span></td>
+            <td class="cell-periode todo">à compléter</td>
+            <td class="cell-x">X</td>
+            <td class="cell-x">X</td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x">X</td>
+            <td class="cell-x empty"></td>
+        </tr>
+
+        <tr>
+            <td class="cell-real">XEILOS — refonte réseau (étude de cas)
+                <span class="sub">⚠ En cours : étape 1/5 (analyse du besoin client) réalisée en mars 2026 ; étapes suivantes non retrouvées sur le disque — à vérifier avec Mehdi avant de cocher des compétences</span></td>
+            <td class="cell-periode todo">à compléter</td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+        </tr>
+
+        <tr>
+            <td class="cell-real">Dashboard — Nice Volley-Ball
+                <span class="sub">Développement des interfaces du dashboard, en équipe (partie développement du projet)</span></td>
+            <td class="cell-periode">15/06/26 – 19/06/26</td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x">X</td>
+            <td class="cell-x">X</td>
+            <td class="cell-x empty"></td>
+        </tr>
+
+        <tr>
+            <td class="cell-real">Refonte e-commerce — TechShop
+                <span class="sub">Refonte complète d'un site e-commerce (accueil, catalogue, panier, paiement) : identité visuelle, responsive mobile-first, recherche et filtres, mode sombre</span></td>
+            <td class="cell-periode">10/12/25 – 07/01/26</td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x">X</td>
+            <td class="cell-x">X</td>
+            <td class="cell-x">X</td>
+            <td class="cell-x empty"></td>
+        </tr>
+
+        <tr>
+            <td class="cell-real">Santa's Workshop — gestion de production de cadeaux
+                <span class="sub">Outil de suivi (catégories, statuts, filtres, export/import JSON) avec persistance des données en localStorage</span></td>
+            <td class="cell-periode">17/12/25</td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x">X</td>
+            <td class="cell-x empty"></td>
+        </tr>
+
+        <tr>
+            <td class="cell-real">Veille technologique &amp; portfolio numérique
+                <span class="sub">Veille sur la cryptographie post-quantique ; conception et publication du portfolio en ligne</span></td>
+            <td class="cell-periode">2025-2026</td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x">X</td>
+        </tr>
+
+        <tr class="section-row"><th colspan="8">Réalisations en milieu professionnel — 1ère année (stage)</th></tr>
+
+        <tr>
+            <td class="cell-real">Refonte totale du réseau et mise en place d'un serveur de fichiers — Noha Auto (Cannes)
+                <span class="sub">Refonte de l'infrastructure réseau ; déploiement d'un serveur sur Raspberry&nbsp;Pi&nbsp;5 pour le stockage centralisé des fichiers clients (dossiers magasin, facturation, etc.)</span></td>
+            <td class="cell-periode todo">dates de stage à compléter</td>
+            <td class="cell-x">X</td>
+            <td class="cell-x tentative">x&nbsp;?</td>
+            <td class="cell-x empty"></td>
+            <td class="cell-x">X</td>
+            <td class="cell-x">X</td>
+            <td class="cell-x empty"></td>
+        </tr>
+
+        <tr class="section-row"><th colspan="8">Réalisations en milieu professionnel — 2de année</th></tr>
+        <tr>
+            <td class="cell-real" style="color:#8a8aa0; font-style:italic;">Non renseigné à ce jour</td>
+            <td class="cell-periode todo">—</td>
+            <td class="cell-x empty"></td><td class="cell-x empty"></td><td class="cell-x empty"></td>
+            <td class="cell-x empty"></td><td class="cell-x empty"></td><td class="cell-x empty"></td>
+        </tr>
+
+    </tbody>
+</table>
+
+<div class="key-row">
+    <span><span class="key-x">X</span> compétence mobilisée (couverture confirmée par la description du projet)</span>
+    <span><span class="key-x2">x&nbsp;?</span> couverture probable, à confirmer par le candidat</span>
+    <span>case grisée = compétence non mobilisée par cette réalisation</span>
+</div>
+
+<div class="ok-note">
+    <b>✓ Couverture des 6 compétences :</b> avec la refonte e-commerce TechShop (identité visuelle, site
+    exploitant les données de l'organisation), chacune des six compétences du bloc 1 est désormais mobilisée par
+    au moins une réalisation. Il reste néanmoins à vérifier, avec le formateur référent, que les <u>deux
+    réalisations présentées à l'oral</u> (et non l'ensemble du tableau) couvrent bien, à elles deux, toutes les
+    compétences — c'est ce point précis que le jury contrôle.
+</div>
+
+<div class="legend">
+    <div class="comp-block">
+        <b>① Gérer le patrimoine informatique</b>
+        <ul>
+            <li>Recenser et identifier les ressources numériques</li>
+            <li>Exploiter des référentiels, normes et standards</li>
+            <li>Mettre en place et vérifier les niveaux d'habilitation</li>
+            <li>Vérifier les conditions de continuité d'un service</li>
+            <li>Gérer des sauvegardes</li>
+            <li>Vérifier le respect des règles d'utilisation des ressources</li>
+        </ul>
+    </div>
+    <div class="comp-block">
+        <b>② Répondre aux incidents et aux demandes d'assistance et d'évolution</b>
+        <ul>
+            <li>Collecter, suivre et orienter des demandes</li>
+            <li>Traiter des demandes concernant les services réseau, système, applicatifs</li>
+            <li>Traiter des demandes concernant les applications</li>
+        </ul>
+    </div>
+    <div class="comp-block">
+        <b>③ Développer la présence en ligne de l'organisation</b>
+        <ul>
+            <li>Participer à la valorisation de l'image de l'organisation sur les médias numériques</li>
+            <li>Référencer les services en ligne et mesurer leur visibilité</li>
+            <li>Participer à l'évolution d'un site web exploitant les données de l'organisation</li>
+        </ul>
+    </div>
+    <div class="comp-block">
+        <b>④ Travailler en mode projet</b>
+        <ul>
+            <li>Analyser les objectifs et modalités d'organisation d'un projet</li>
+            <li>Planifier les activités</li>
+            <li>Évaluer les indicateurs de suivi d'un projet et analyser les écarts</li>
+        </ul>
+    </div>
+    <div class="comp-block">
+        <b>⑤ Mettre à disposition des utilisateurs un service informatique</b>
+        <ul>
+            <li>Réaliser les tests d'intégration et d'acceptation d'un service</li>
+            <li>Déployer un service</li>
+            <li>Accompagner les utilisateurs dans la mise en place d'un service</li>
+        </ul>
+    </div>
+    <div class="comp-block">
+        <b>⑥ Organiser son développement professionnel</b>
+        <ul>
+            <li>Mettre en place son environnement d'apprentissage personnel</li>
+            <li>Mettre en œuvre des outils et stratégies de veille informationnelle</li>
+            <li>Gérer son identité professionnelle</li>
+            <li>Développer son projet professionnel</li>
+        </ul>
+    </div>
+</div>
+
+</body>
+</html>

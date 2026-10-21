@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark light">
+    <title>Veille Technologique — Cryptographie post-quantique | Mehdi Seghier</title>
+    <meta name="description"
+        content="Veille technologique BTS SIO SISR : l'impact de l'ordinateur quantique sur le chiffrement et le déchiffrement des données, et la transition vers la cryptographie post-quantique (PQC).">
+    <meta name="author" content="Mehdi Seghier">
+
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Veille Technologique — Cryptographie post-quantique">
+    <meta property="og:description"
+        content="Menaces actuelles et transition vers la cryptographie post-quantique. Veille technologique BTS SIO option SISR.">
+    <meta property="og:locale" content="fr_FR">
+
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#128274;</text></svg>">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/veille.css">
+    <link rel="stylesheet" href="assets/css/v2.css">
+    <link rel="stylesheet" href="assets/css/veille-v2.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        // Thème + mode performance appliqués AVANT le rendu (pas de flash)
+        (function () {
+            var d = document.documentElement;
+            try {
+                if (localStorage.getItem('theme') === 'light') d.setAttribute('data-theme', 'light');
+                if (localStorage.getItem('fx') === 'off') d.classList.add('fx-off');
+            } catch (e) { /* localStorage indisponible : réglages par défaut */ }
+        })();
+    </script>
+</head>
+
+<body class="veille-page">
+
+    <canvas id="scene3d" aria-hidden="true"></canvas>
+    <div class="cursor-glow" aria-hidden="true"></div>
+    <div class="cursor-ring" aria-hidden="true"></div>
+
+    <div class="reading-progress"><span id="reading-bar"></span></div>
+
+    <a href="#contenu" class="skip-link">Aller au contenu</a>
+
+    <button type="button" id="terminal-toggle" aria-label="Ouvrir le terminal" aria-expanded="false"
+        aria-controls="terminal-panel">
+        <i class="fas fa-terminal" aria-hidden="true"></i>
+    </button>
+
+    <div id="terminal-panel" class="terminal-panel" role="dialog" aria-label="Terminal interactif" hidden>
+        <div class="terminal-header">
+            <span class="terminal-dots" aria-hidden="true">
+                <span class="terminal-dot terminal-dot--red"></span>
+                <span class="terminal-dot terminal-dot--yellow"></span>
+                <span class="terminal-dot terminal-dot--green"></span>
+            </span>
+            <span class="terminal-title">mehdi@sisr &mdash; bash</span>
+            <button type="button" class="terminal-close" aria-label="Fermer le terminal">
+                <i class="fas fa-xmark" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div class="terminal-body" id="terminal-output" role="log" aria-live="polite" tabindex="0"></div>
+        <form class="terminal-input-row" id="terminal-form">
+            <label for="terminal-input" class="sr-only">Commande</label>
+            <span class="terminal-prompt" aria-hidden="true">mehdi@sisr:~$</span>
+            <input type="text" id="terminal-input" autocomplete="off" spellcheck="false" autocapitalize="off">
+        </form>
+    </div>
+
+    <nav class="navbar">
+        <a href="index.html" class="nav-logo" aria-label="Retour au portfolio">
+            <span class="nav-logo-mark" aria-hidden="true">MS</span>
+            <span class="nav-logo-text"><i class="fas fa-arrow-left" aria-hidden="true"></i> Portfolio</span>
+        </a>
+        <ul class="nav-menu" id="nav-menu">
+            <li class="nav-item"><a href="index.html#skills" class="nav-link">Compétences</a></li>
+            <li class="nav-item"><a href="index.html#projects" class="nav-link">Projets</a></li>
+            <li class="nav-item"><a href="veille.html" class="nav-link active-link" aria-current="page">Veille</a></li>
+            <li class="nav-item"><a href="index.html#contact" class="nav-link">Contact</a></li>
+            <li class="nav-item nav-item--cta">
+                <a href="documents/tableau-synthese-bts-sio-sisr-mehdi-seghier.pdf"
+                    download="Tableau-synthese-BTS-SIO-SISR-Mehdi-Seghier.pdf" class="nav-cta">
+                    <i class="fas fa-table-list" aria-hidden="true"></i> Tableau de synthèse
+                </a>
+            </li>
+        </ul>
+        <div class="nav-actions">
+            <button type="button" id="theme-toggle" aria-label="Basculer le mode clair / sombre">
+                <i class="fas fa-moon" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="hamburger" aria-label="Ouvrir le menu" aria-expanded="false"
+                aria-controls="nav-menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ===================== EN-TÊTE DE LA VEILLE ===================== -->
+    <header class="veille-hero">
+        <div class="veille-hero-inner">
+            <p class="veille-eyebrow"><i class="fas fa-satellite-dish" aria-hidden="true"></i> Veille technologique</p>
+            <h1>L'impact de <span class="text-grad">l'ordinateur quantique</span> sur le chiffrement et le
+                déchiffrement des données</h1>
+            <p class="veille-subtitle">Menaces actuelles et transition vers la cryptographie post-quantique</p>
+
+            <ul class="veille-meta">
+                <li><i class="fas fa-user" aria-hidden="true"></i> Mehdi Seghier</li>
+                <li><i class="fas fa-graduation-cap" aria-hidden="true"></i> BTS SIO — option SISR</li>
+                <li><i class="fas fa-calendar" aria-hidden="true"></i> Année 2025 – 2027</li>
+                <li><i class="fas fa-clock" aria-hidden="true"></i> ~22 min de lecture</li>
+                <li><i class="fas fa-rotate" aria-hidden="true"></i> Mise à jour : 21 octobre 2026</li>
+            </ul>
+
+            <div class="veille-hero-actions">
+                <a href="#sommaire" class="btn btn-primary">
+                    <i class="fas fa-list-ol" aria-hidden="true"></i> Sommaire
+                </a>
+                <a href="documents/veille-technologique-pqc.pdf" download="Veille-Technologique-PQC-Mehdi-Seghier.pdf"
+                    class="btn btn-outline">
+                    <i class="fas fa-file-pdf" aria-hidden="true"></i> Télécharger le PDF
+                </a>
+                <a href="#actualites" class="btn btn-outline btn-news">
+                    <i class="fas fa-bolt" aria-hidden="true"></i> Quoi de neuf ?
+                </a>
+            </div>
+
+            <p class="lattice-caption">
+                <i class="fas fa-cube" aria-hidden="true"></i>
+                En arrière-plan : un <strong>réseau euclidien</strong> (<em>lattice</em>) en 3D, la structure
+                mathématique sur laquelle reposent ML-KEM et ML-DSA. Les points légèrement décalés illustrent le
+                « bruit » qui rend le problème difficile, même pour un ordinateur quantique.
+            </p>
+        </div>
+    </header>
+
+    <!-- ===================== SOMMAIRE CLIQUABLE ===================== -->
+    <section id="sommaire" class="sommaire" aria-labelledby="sommaire-titre">
+        <h2 id="sommaire-titre" class="sommaire-titre"><i class="fas fa-list-ol" aria-hidden="true"></i> Sommaire</h2>
+        <p class="sommaire-aide">Cliquez sur une section pour y accéder directement.</p>
+        <ol class="sommaire-grid">
+            <li class="sommaire-news"><a href="#actualites"><span class="sommaire-num"><i class="fas fa-bolt"
+                            aria-hidden="true"></i></span> Quoi de neuf ? Actualités juin – octobre 2026</a></li>
+            <li><a href="#section-1"><span class="sommaire-num">01</span> Contexte et enjeux</a></li>
+            <li><a href="#section-2"><span class="sommaire-num">02</span> Informatique quantique et cryptographie</a>
+            </li>
+            <li><a href="#section-3"><span class="sommaire-num">03</span> Les ordinateurs quantiques actuels</a></li>
+            <li><a href="#section-4"><span class="sommaire-num">04</span> Points forts de l'innovation
+                    post-quantique</a></li>
+            <li><a href="#section-5"><span class="sommaire-num">05</span> Architecture et méthodes de protection</a>
+            </li>
+            <li><a href="#section-6"><span class="sommaire-num">06</span> Capacités et échelle de temps</a></li>
+            <li><a href="#section-7"><span class="sommaire-num">07</span> Stack technologique et outils</a></li>
+            <li><a href="#section-8"><span class="sommaire-num">08</span> Cas d'usage et résultats concrets</a></li>
+            <li><a href="#section-9"><span class="sommaire-num">09</span> Défis relevés et solutions</a></li>
+            <li><a href="#section-10"><span class="sommaire-num">10</span> Cadre normatif et recommandations</a></li>
+            <li><a href="#section-11"><span class="sommaire-num">11</span> Glossaire des termes clés</a></li>
+            <li><a href="#section-12"><span class="sommaire-num">12</span> FAQ — questions fréquentes</a></li>
+            <li><a href="#section-13"><span class="sommaire-num">13</span> Sources et références</a></li>
+        </ol>
+    </section>
+
+    <div class="veille-layout">
+
+        <!-- ===================== SOMMAIRE LATÉRAL (sticky) ===================== -->
+        <aside class="toc" id="toc" aria-label="Sommaire de la veille">
+            <p class="toc-title">Sommaire</p>
+            <nav>
+                <ol class="toc-list">
+                    <li class="toc-news"><a href="#actualites">Quoi de neuf ?</a></li>
+                    <li><a href="#section-1">Contexte et enjeux</a></li>
+                    <li><a href="#section-2">Informatique quantique</a></li>
+                    <li><a href="#section-3">Ordinateurs quantiques actuels</a></li>
+                    <li><a href="#section-4">Points forts de la PQC</a></li>
+                    <li><a href="#section-5">Méthodes de protection</a></li>
+                    <li><a href="#section-6">Capacités et échelle de temps</a></li>
+                    <li><a href="#section-7">Stack technologique</a></li>
+                    <li><a href="#section-8">Cas d'usage concrets</a></li>
+                    <li><a href="#section-9">Défis et solutions</a></li>
+                    <li><a href="#section-10">Cadre normatif</a></li>
+                    <li><a href="#section-11">Glossaire</a></li>
+                    <li><a href="#section-12">FAQ</a></li>
+                    <li><a href="#section-13">Sources</a></li>
+                </ol>
+            </nav>
+        </aside>
+
+        <!-- ===================== CONTENU ===================== -->
+        <main class="veille-body" id="contenu">
+
+            <!-- ---------- ACTUALITÉS ---------- -->
+            <section id="actualites" class="veille-section veille-news">
+                <p class="section-num">Mise à jour du 21 octobre 2026 <span class="badge">nouveau</span></p>
+                <h2>Quoi de neuf ? Les actualités de juin à octobre 2026</h2>
+
+                <p class="section-intro">
+                    Les faits marquants depuis la précédente mise à jour, du plus récent au plus ancien. Chaque
+                    information est reliée à sa source en fin de page.
+                </p>
+
+                <ol class="news-timeline">
+                    <li class="news-item">
+                        <time class="news-date" datetime="2026-10-16">16 oct. 2026</time>
+                        <div class="news-card">
+                            <span class="news-tag news-tag--reg">Réglementation</span>
+                            <h3>L'Allemagne publie son guide national de migration</h3>
+                            <p>
+                                Le ministère de l'Intérieur (BMI), le ministère du Numérique (BMDS) et l'agence de
+                                cybersécurité <strong>BSI</strong> déclinent la feuille de route européenne : les cas
+                                d'usage à haut risque doivent être migrés <strong>au plus tard fin 2030</strong>, et la
+                                transition largement achevée d'ici <strong>2035</strong>. Le guide insiste sur la
+                                <strong>crypto-agilité</strong> : pouvoir changer d'algorithme ou de taille de clé
+                                rapidement et de façon maîtrisée.
+                            </p>
+                        </div>
+                    </li>
+                    <li class="news-item">
+                        <time class="news-date" datetime="2026-10-12">12 oct. 2026</time>
+                        <div class="news-card">
+                            <span class="news-tag news-tag--deploy">Déploiement</span>
+                            <h3>Google Meet passe à la cryptographie post-quantique</h3>
+                            <p>
+                                Google déploie progressivement la PQC sur les appels Meet (navigateurs sur ordinateur
+                                et matériel de salle de réunion, mobile annoncé), sans aucune action des utilisateurs.
+                                Objectif : protéger dès aujourd'hui les échanges contre la menace « Store Now, Decrypt
+                                Later ».
+                            </p>
+                        </div>
+                    </li>
+                    <li class="news-item">
+                        <time class="news-date" datetime="2026-09-24">24 sept. 2026</time>
+                        <div class="news-card">
+                            <span class="news-tag news-tag--hw">Matériel</span>
+                            <h3>Infleqtion annonce 30 qubits logiques intriqués</h3>
+                            <p>
+                                Obtenus sur sa machine à atomes neutres <strong>Sqale</strong>, à partir de 80 qubits
+                                physiques. Le communiqué ne précise pas s'il s'agit de correction ou de simple détection
+                                d'erreurs : un résultat à prendre avec recul.
+                            </p>
+                        </div>
+                    </li>
+                    <li class="news-item">
+                        <time class="news-date" datetime="2026-09-03">3 sept. 2026</time>
+                        <div class="news-card">
+                            <span class="news-tag news-tag--intl">International</span>
+                            <h3>Le G7 lance un appel à l'action, proposé par l'ANSSI</h3>
+                            <p>
+                                Le document <em>« Preparing for the Post-Quantum Era: A Call to Action »</em>, proposé
+                                par l'<strong>ANSSI</strong> et négocié par les agences de cybersécurité du G7 et de
+                                l'Union européenne, appelle à engager la migration dès maintenant : sensibilisation aux
+                                risques, stratégies nationales de migration, recherche, coopération public-privé. Il ne
+                                fixe pas de nouvelle échéance.
+                            </p>
+                        </div>
+                    </li>
+                    <li class="news-item">
+                        <time class="news-date" datetime="2026-07-30">30 juil. 2026</time>
+                        <div class="news-card">
+                            <span class="news-tag news-tag--hw">Matériel</span>
+                            <h3>IBM réalise un calcul sur 70 qubits logiques</h3>
+                            <p>
+                                Avec l'Université de Chicago, IBM annonce un « avantage quantique » vérifiable : un
+                                calcul d'environ 15 minutes sur <strong>70 qubits logiques</strong> corrigés, hors de
+                                portée des meilleures simulations classiques selon les chercheurs. Aucune conséquence
+                                directe pour RSA, mais la correction d'erreurs progresse vite.
+                            </p>
+                        </div>
+                    </li>
+                    <li class="news-item">
+                        <time class="news-date" datetime="2026-06-22">22 juin 2026</time>
+                        <div class="news-card">
+                            <span class="news-tag news-tag--reg">Réglementation</span>
+                            <h3>États-Unis : décret présidentiel EO 14412</h3>
+                            <p>
+                                <em>« Securing the Nation Against Advanced Cryptographic Attacks »</em> organise la
+                                migration des systèmes fédéraux américains vers les standards post-quantiques du NIST et
+                                l'étend aux opérateurs d'infrastructures critiques.
+                            </p>
+                        </div>
+                    </li>
+                </ol>
+
+                <div class="news-watch">
+                    <h3><i class="fas fa-hourglass-half" aria-hidden="true"></i> À surveiller dans les prochains mois</h3>
+                    <ul class="liste-cle">
+                        <li>
+                            <strong>FN-DSA (futur FIPS 206)</strong> : signature post-quantique compacte issue de
+                            Falcon, toujours à l'état de projet au NIST ; sa version finale est attendue prochainement.
+                        </li>
+                        <li>
+                            <strong>HQC (futur FIPS 207)</strong> : le projet de norme pour l'algorithme de secours de
+                            ML-KEM n'avait pas encore été publié pour commentaires à la date de cette mise à jour ; le
+                            standard final est attendu en 2027.
+                        </li>
+                        <li>
+                            <strong>Union européenne</strong> : la feuille de route demande d'avoir démarré la
+                            transition, avec des projets pilotes sur les cas d'usage à risque, d'ici
+                            <strong>fin 2026</strong>.
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- ---------- SECTION 1 ---------- -->
+            <section id="section-1" class="veille-section">
+                <p class="section-num">Section 01</p>
+                <h2>Contexte et enjeux</h2>
+
+                <p>
+                    L'informatique quantique n'est plus seulement un sujet de recherche académique : <strong>de vrais
+                        ordinateurs quantiques existent et fonctionnent déjà</strong> (IBM, Google, Quantinuum,
+                    Pasqal…), certains accessibles à tous via le cloud. Elle représente désormais un enjeu de
+                    cybersécurité concret, suivi de près par les agences nationales (ANSSI en
+                    France, NIST aux États-Unis) et par les grands acteurs du numérique (Google, IBM, Cloudflare…).
+                    L'enjeu central est simple à formuler : <strong>les algorithmes qui protègent aujourd'hui la
+                        quasi-totalité des échanges sur Internet pourraient devenir cassables</strong> par un futur
+                    ordinateur quantique <strong>suffisamment puissant</strong> — ce que les machines actuelles ne
+                    sont pas encore.
+                </p>
+
+                <ul class="liste-cle">
+                    <li>
+                        <strong>La menace « Store Now, Decrypt Later » (SNDL)</strong> : des acteurs malveillants
+                        (États, groupes cybercriminels) interceptent et stockent dès aujourd'hui des volumes massifs
+                        de données chiffrées, en pariant sur leur capacité à les déchiffrer plus tard, une fois qu'un
+                        ordinateur quantique suffisamment puissant existera.
+                    </li>
+                    <li>
+                        <strong>L'obsolescence programmée des standards actuels</strong> : les chiffrements
+                        asymétriques RSA et ECC (courbes elliptiques), qui sécurisent le Web (TLS/HTTPS), la
+                        messagerie, le VPN ou la signature électronique, reposent sur des problèmes mathématiques
+                        (factorisation, logarithme discret) qu'un ordinateur quantique pourra résoudre efficacement
+                        grâce à l'algorithme de Shor.
+                    </li>
+                    <li>
+                        <strong>Une menace qui se rapproche</strong> <span class="badge">mise à jour 2026</span> : en
+                        2025-2026, plusieurs publications (Google Quantum AI, Oratomic, Iceberg Quantum…) ont fortement
+                        réduit le nombre de qubits estimé pour casser RSA et ECC. Les machines actuelles en sont encore
+                        loin, mais l'écart se réduit plus vite que prévu.
+                    </li>
+                    <li>
+                        <strong>Une urgence réelle malgré l'absence de menace immédiate</strong> : la migration
+                        complète d'un système d'information vers de nouveaux standards cryptographiques prend
+                        historiquement une dizaine d'années. L'ANSSI et le NIST recommandent donc de démarrer la
+                        transition dès maintenant, même si l'ordinateur quantique « cryptographiquement pertinent »
+                        n'existe pas encore.
+                    </li>
+                    <li>
+                        <strong>Un risque qui dépasse l'informatique pure</strong> : secteur bancaire, données de
+                        santé, secrets industriels, documents d'État, identité numérique — toute donnée à durée de vie
+                        longue (plus de 10 ans) chiffrée aujourd'hui est potentiellement exposée.
+                    </li>
+                </ul>
+
+                <figure class="schema">
+                    <div class="schema-flow">
+                        <div class="schema-step">
+                            <i class="fas fa-satellite-dish" aria-hidden="true"></i>
+                            <p><strong>Aujourd'hui</strong><br>Interception du trafic chiffré (TLS, VPN)</p>
+                        </div>
+                        <div class="schema-arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></div>
+                        <div class="schema-step">
+                            <i class="fas fa-database" aria-hidden="true"></i>
+                            <p><strong>Stockage</strong><br>Conservation des données illisibles pendant des années</p>
+                        </div>
+                        <div class="schema-arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></div>
+                        <div class="schema-step schema-step--danger">
+                            <i class="fas fa-atom" aria-hidden="true"></i>
+                            <p><strong>« Q-Day »</strong><br>Déchiffrement rétroactif par ordinateur quantique</p>
+                        </div>
+                    </div>
+                    <figcaption>Schéma — principe de l'attaque « Store Now, Decrypt Later »</figcaption>
+                </figure>
+
+            </section>
+
+            <!-- ---------- SECTION 2 ---------- -->
+            <section id="section-2" class="veille-section">
+                <p class="section-num">Section 02</p>
+                <h2>Qu'est-ce que l'informatique quantique et la cryptographie ?</h2>
+
+                <div class="compare-grid">
+                    <div class="compare-card" data-tilt="4">
+                        <h3><i class="fas fa-microchip" aria-hidden="true"></i> Informatique classique</h3>
+                        <p>
+                            Traite l'information sous forme de <strong>bits</strong>, qui valent strictement 0 ou 1.
+                            Toute opération est séquentielle, ou parallélisée sur un nombre limité de cœurs.
+                        </p>
+                    </div>
+                    <div class="compare-card compare-card--accent" data-tilt="4">
+                        <h3><i class="fas fa-atom" aria-hidden="true"></i> Informatique quantique</h3>
+                        <p>
+                            Repose sur des <strong>qubits</strong>, qui exploitent deux propriétés de la physique
+                            quantique : la <strong>superposition</strong> (un qubit peut représenter une combinaison
+                            de 0 et de 1 simultanément) et l'<strong>intrication</strong> (l'état d'un qubit peut être
+                            corrélé à celui d'un autre, même à distance). En combinant plusieurs qubits, un ordinateur
+                            quantique peut explorer un nombre exponentiel de combinaisons en parallèle —
+                            <strong>pour certains types de problèmes seulement</strong>, pas pour tous les calculs.
+                        </p>
+                    </div>
+                </div>
+
+                <ul class="liste-cle">
+                    <li>
+                        <strong>Qubit physique vs qubit logique</strong> : un qubit physique est le composant matériel
+                        réel (atome, ion, circuit supraconducteur), fragile et sujet aux erreurs. Un qubit logique est
+                        un qubit « fiable » obtenu en regroupant plusieurs qubits physiques grâce à la correction
+                        d'erreurs. Casser RSA nécessite des qubits logiques : c'est pour cela qu'on parle de centaines
+                        de milliers de qubits physiques.
+                    </li>
+                    <li>
+                        <strong>Algorithme de Shor (1994)</strong> : algorithme quantique permettant de
+                        factoriser de grands nombres et de résoudre le problème du logarithme discret de façon
+                        exponentiellement plus rapide qu'avec un ordinateur classique. C'est précisément sur ces deux
+                        problèmes que reposent RSA et les courbes elliptiques (ECC) : un ordinateur quantique
+                        suffisamment puissant exécutant Shor casserait donc ces deux familles d'algorithmes.
+                    </li>
+                    <li>
+                        <strong>Algorithme de Grover (1996)</strong> : algorithme quantique qui accélère la recherche
+                        dans une liste non triée, avec un gain quadratique (et non exponentiel). Il affaiblit la
+                        cryptographie symétrique (AES) mais ne la rend pas obsolète : doubler la taille de la clé
+                        (AES-256 au lieu d'AES-128) suffit à compenser cette accélération.
+                    </li>
+                    <li>
+                        <strong>Cryptographie post-quantique (PQC)</strong> : famille de nouveaux algorithmes
+                        cryptographiques classiques (ils tournent sur des ordinateurs classiques, pas sur des
+                        ordinateurs quantiques) mais fondés sur des problèmes mathématiques que même un ordinateur
+                        quantique ne sait pas résoudre efficacement à ce jour (réseaux euclidiens, codes correcteurs
+                        d'erreurs, fonctions de hachage).
+                    </li>
+                </ul>
+
+            </section>
+
+            <!-- ---------- SECTION 3 ---------- -->
+            <section id="section-3" class="veille-section">
+                <p class="section-num">Section 03 <span class="badge">nouveau</span></p>
+                <h2>Les ordinateurs quantiques qui existent aujourd'hui</h2>
+
+                <p>
+                    Contrairement à une idée reçue, l'ordinateur quantique n'est pas une machine imaginaire : plusieurs
+                    entreprises en construisent et en exploitent depuis des années, avec différentes technologies
+                    (circuits supraconducteurs refroidis près du zéro absolu, ions piégés, atomes neutres manipulés par
+                    laser, photons). Principales machines connues en octobre 2026 :
+                </p>
+
+                <div class="table-wrap">
+                    <table class="veille-table">
+                        <caption>Panorama des ordinateurs quantiques en 2026</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Constructeur</th>
+                                <th scope="col">Ce qu'il faut retenir</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">IBM <span class="tag">supraconducteurs</span></th>
+                                <td><strong>Condor</strong> (2023) a été le premier processeur à dépasser 1 000 qubits
+                                    (1 121). <strong>Nighthawk</strong> (novembre 2025, 120 qubits) est le processeur
+                                    « utile » actuel ; <strong>Loon</strong> teste la correction d'erreurs. IBM vise une
+                                    machine tolérante aux pannes, <strong>Starling (~200 qubits logiques), en
+                                        2029</strong>. En juillet 2026, IBM et l'Université de Chicago ont réalisé un
+                                    calcul sur <strong>70 qubits logiques</strong> <span class="badge">2026</span>.
+                                    Accessible gratuitement via le cloud IBM Quantum.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Google Quantum AI <span class="tag">supraconducteurs</span></th>
+                                <td><strong>Willow</strong> (décembre 2024, 105 qubits) a démontré une correction
+                                    d'erreurs « sous le seuil » : plus on ajoute de qubits, moins il y a d'erreurs.
+                                    Google avait annoncé la « suprématie quantique » dès 2019 avec Sycamore
+                                    (53 qubits).</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Quantinuum <span class="tag">ions piégés</span></th>
+                                <td><strong>Helios</strong> (fin 2025, 98 qubits) mise sur la qualité : les meilleures
+                                    fidélités du marché (≈ 99,9 %) et jusqu'à 48 qubits logiques annoncés par le
+                                    constructeur.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Atom Computing / Microsoft <span class="tag">atomes neutres</span></th>
+                                <td>Plus de 1 200 qubits physiques. Microsoft a aussi présenté en février 2025 la puce
+                                    <strong>Majorana 1</strong> (qubits « topologiques »), une approche encore débattue.
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Infleqtion <span class="tag">atomes neutres</span></th>
+                                <td>Annonce en septembre 2026 <strong>30 qubits logiques intriqués</strong> sur 80
+                                    qubits physiques (machine Sqale), sans préciser s'il s'agit de correction ou de
+                                    détection d'erreurs.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Pasqal, Alice &amp; Bob, Quandela, Quobly <span class="tag">France</span>
+                                </th>
+                                <td>Écosystème français soutenu par le programme d'État PROQCIMA : Pasqal (atomes
+                                    neutres), Alice &amp; Bob (« qubits de chat », objectif tolérance aux pannes vers
+                                    2030), Quandela (photonique, machine Lucy livrée au CEA), Quobly (silicium).</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3><i class="fas fa-circle-question" aria-hidden="true"></i> Alors, pourquoi RSA n'est-il pas encore
+                    cassé ?</h3>
+                <ul class="liste-cle">
+                    <li>
+                        <strong>Trop peu de qubits fiables</strong> : les meilleures démonstrations atteignent quelques
+                        dizaines de qubits logiques (70 pour IBM en juillet 2026) ; casser RSA-2048 ou ECC-256 en
+                        demande environ un à deux milliers,
+                        soit des centaines de milliers de qubits physiques selon les estimations récentes.
+                    </li>
+                    <li>
+                        <strong>Trop d'erreurs</strong> : les qubits physiques perdent très vite leur état quantique
+                        (décohérence). Il faut une correction d'erreurs massive pour exécuter Shor jusqu'au bout.
+                    </li>
+                    <li>
+                        <strong>Record public de factorisation par Shor</strong> : il reste minuscule (de très petits
+                        nombres), sans commune mesure avec une clé RSA de 2048 bits.
+                    </li>
+                </ul>
+
+            </section>
+
+            <!-- ---------- SECTION 4 ---------- -->
+            <section id="section-4" class="veille-section">
+                <p class="section-num">Section 04</p>
+                <h2>Points forts de l'innovation post-quantique</h2>
+
+                <div class="cards-grid">
+                    <article class="mini-card" data-tilt="5">
+                        <i class="fas fa-shield-halved" aria-hidden="true"></i>
+                        <h3>Sécurité pérenne</h3>
+                        <p>
+                            Protège dès aujourd'hui les communications dont la confidentialité doit durer plusieurs
+                            décennies : données bancaires, données de santé, secrets d'État, données personnelles
+                            soumises au RGPD.
+                        </p>
+                    </article>
+                    <article class="mini-card" data-tilt="5">
+                        <i class="fas fa-plug" aria-hidden="true"></i>
+                        <h3>Interopérabilité</h3>
+                        <p>
+                            Les algorithmes PQC retenus par le NIST s'intègrent dans les protocoles existants
+                            (TLS 1.3, IPsec, SSH, S/MIME) sans matériel cryptographique spécialisé — contrairement à
+                            la QKD, qui exige fibre optique dédiée et capteurs de photons.
+                        </p>
+                    </article>
+                    <article class="mini-card" data-tilt="5">
+                        <i class="fas fa-clipboard-list" aria-hidden="true"></i>
+                        <h3>Gouvernance du risque</h3>
+                        <p>
+                            Engager la transition maintenant permet de cartographier le SI (inventaire
+                            cryptographique), d'identifier les usages critiques de RSA/ECC et d'isoler les
+                            vulnérabilités avant que la menace ne devienne opérationnelle.
+                        </p>
+                    </article>
+                    <article class="mini-card" data-tilt="5">
+                        <i class="fas fa-shapes" aria-hidden="true"></i>
+                        <h3>Diversité mathématique</h3>
+                        <p>
+                            Le NIST a volontairement standardisé plusieurs familles (réseaux euclidiens pour
+                            ML-KEM/ML-DSA, hachage pour SLH-DSA, codes correcteurs pour HQC) afin de ne pas dépendre
+                            d'un seul problème mathématique — leçon tirée de l'échec de SIKE et Rainbow, cassés par
+                            cryptanalyse classique pendant le concours.
+                        </p>
+                    </article>
+                </div>
+            </section>
+
+            <!-- ---------- SECTION 5 ---------- -->
+            <section id="section-5" class="veille-section">
+                <p class="section-num">Section 05</p>
+                <h2>Architecture et méthodes de protection</h2>
+
+                <ol class="liste-num">
+                    <li>
+                        <h3>Chiffrement symétrique (AES)</h3>
+                        <p>
+                            Reste globalement sûr face au quantique. L'algorithme de Grover ne fait que diviser par
+                            deux le niveau de sécurité effectif : il suffit donc de passer de l'<strong>AES-128 à
+                                l'AES-256</strong> pour conserver un niveau de sécurité équivalent dans un monde
+                            post-quantique.
+                        </p>
+                    </li>
+                    <li>
+                        <h3>Nouveaux algorithmes asymétriques post-quantiques (PQC)</h3>
+                        <p>
+                            Remplacent RSA/ECC pour l'échange de clés et la signature. Les familles principales sont
+                            les <strong>réseaux euclidiens (lattices)</strong>, les <strong>codes correcteurs
+                                d'erreurs</strong> et les <strong>fonctions de hachage</strong>.
+                        </p>
+                    </li>
+                    <li>
+                        <h3>Distribution quantique de clés (QKD)</h3>
+                        <p>
+                            Utilise les propriétés physiques des photons (et non des mathématiques) pour transmettre
+                            une clé de chiffrement. Toute tentative d'interception perturbe physiquement l'état
+                            quantique des photons, ce qui rend l'écoute détectable. <strong>Limite
+                                importante</strong> : la QKD nécessite une liaison physique dédiée (fibre optique ou
+                            satellite) et ne sécurise que l'échange de la clé, pas le chiffrement des données lui-même
+                            (qui reste fait classiquement, par exemple en AES).
+                        </p>
+                    </li>
+                    <li>
+                        <h3>La cryptographie hybride</h3>
+                        <p>
+                            Stratégie de transition recommandée par l'ANSSI et le NIST : combiner un algorithme
+                            classique éprouvé (<strong>ECDH</strong>) avec un algorithme post-quantique
+                            (<strong>ML-KEM</strong>) lors de chaque négociation TLS. Ainsi, même si l'un des deux
+                            algorithmes est cassé — par un ordinateur quantique pour le premier, par une faille de
+                            cryptanalyse pour le second — la communication reste protégée par l'autre.
+                        </p>
+                    </li>
+                </ol>
+
+                <figure class="schema">
+                    <div class="schema-hybride">
+                        <div class="schema-lane">
+                            <span class="lane-tag">Classique</span>
+                            <code>X25519 / ECDH</code>
+                        </div>
+                        <div class="schema-op" aria-hidden="true">+</div>
+                        <div class="schema-lane schema-lane--accent">
+                            <span class="lane-tag">Post-quantique</span>
+                            <code>ML-KEM (ex-Kyber)</code>
+                        </div>
+                        <div class="schema-op" aria-hidden="true">=</div>
+                        <div class="schema-result">
+                            <i class="fas fa-lock" aria-hidden="true"></i>
+                            <span>Secret partagé TLS résistant aux deux menaces</span>
+                        </div>
+                    </div>
+                    <figcaption>Schéma — architecture d'une négociation TLS hybride</figcaption>
+                </figure>
+
+            </section>
+
+            <!-- ---------- SECTION 6 ---------- -->
+            <section id="section-6" class="veille-section">
+                <p class="section-num">Section 06</p>
+                <h2>Capacités et échelle de temps</h2>
+
+                <p>
+                    Les ordinateurs quantiques actuels comptent de <strong>~100 à plus de 1 000 qubits
+                        physiques</strong> selon les technologies, mais seulement quelques dizaines de <strong>qubits
+                        logiques</strong> (fiables). On sort progressivement de l'ère dite « NISQ » (Noisy
+                    Intermediate-Scale Quantum) : la correction d'erreurs fonctionne désormais en laboratoire (Google
+                    Willow, Quantinuum Helios). Casser RSA-2048 reste hors de portée en 2026, mais <strong>les
+                        estimations du matériel nécessaire ont été divisées par plus de 20 en sept ans</strong> :
+                </p>
+
+                <div class="table-wrap">
+                    <table class="veille-table">
+                        <caption>Qubits physiques estimés pour casser RSA-2048</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Estimation</th>
+                                <th scope="col">Nombre de qubits physiques</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">2019 — Gidney &amp; Ekerå</th>
+                                <td><strong>≈ 20 millions</strong> (8 heures de calcul)</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">2025 — Gidney (Google)</th>
+                                <td><strong>moins d'1 million</strong> (moins d'une semaine)</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">2026 — Iceberg Quantum <span class="tag">préprint</span></th>
+                                <td><strong>moins de 100 000</strong> (non encore validé par les pairs)</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Plus grandes machines en 2026</th>
+                                <td>≈ 1 000 à 1 200 qubits physiques, encore bruités</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p>
+                    Les courbes elliptiques (ECC-256, utilisées par TLS, les cartes bancaires ou Bitcoin) sont encore
+                    plus exposées : en mars 2026, <strong>Google Quantum AI</strong> a estimé qu'environ 1 200 qubits
+                    logiques (soit <strong>moins de 500 000 qubits physiques</strong>) suffiraient à casser une clé
+                    ECC-256 en quelques minutes ; le même jour, la start-up <strong>Oratomic</strong> a avancé qu'une
+                    machine à atomes neutres d'environ 26 000 qubits pourrait le faire (préprint).
+                </p>
+
+                <div class="table-wrap">
+                    <table class="veille-table">
+                        <caption>Frise chronologique de la transition post-quantique</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Période</th>
+                                <th scope="col">État des lieux</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">2019</th>
+                                <td>Google annonce la « suprématie quantique » avec Sycamore (53 qubits).</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">2024 <span class="tag">standardisation</span></th>
+                                <td>Le NIST publie les trois premiers standards post-quantiques : <strong>FIPS 203
+                                        (ML-KEM)</strong>, <strong>FIPS 204 (ML-DSA)</strong> et <strong>FIPS 205
+                                        (SLH-DSA)</strong>, au terme de huit ans d'évaluation internationale. Google
+                                    présente la puce Willow.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">2025</th>
+                                <td>Le NIST sélectionne <strong>HQC</strong> comme algorithme de secours pour
+                                    l'échange de clés, fondé sur les codes correcteurs d'erreurs — mathématiques
+                                    différentes des réseaux euclidiens, pour limiter le risque qu'une seule famille
+                                    d'algorithmes soit un jour cassée. Craig Gidney (Google) montre que RSA-2048
+                                    pourrait être cassé avec <strong>moins d'un million</strong> de qubits.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">2026 <span class="tag tag--danger">accélération</span></th>
+                                <td>Trois publications en trois mois (Iceberg Quantum, Google Quantum AI, Oratomic)
+                                    réduisent encore les ressources nécessaires pour casser RSA et ECC. Google et
+                                    Cloudflare avancent leur objectif de migration post-quantique complète à
+                                    <strong>2029</strong>. Décret américain EO 14412 (juin), appel à l'action du
+                                    <strong>G7</strong> proposé par l'ANSSI (septembre), guide de migration allemand
+                                    (octobre).</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">2027</th>
+                                <td><strong>ANSSI</strong> : arrêt progressif des nouvelles certifications /
+                                    qualifications de produits de sécurité n'intégrant pas la cryptographie
+                                    post-quantique (annoncé en juin 2026).</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">2029</th>
+                                <td>Objectif « 100 % post-quantique » (y compris l'authentification) de
+                                    <strong>Google et Cloudflare</strong>. IBM prévoit sa machine tolérante aux pannes
+                                    <strong>Starling</strong>.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">2030 <span class="tag">jalon réglementaire</span></th>
+                                <td>L'ANSSI et le NIST estiment qu'il ne sera plus raisonnable d'acheter des produits
+                                    n'intégrant pas la PQC après cette date ; le NIST prévoit la dépréciation de
+                                    RSA/ECDSA pour les nouvelles implémentations à cet horizon.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">2035</th>
+                                <td>Retrait prévu des algorithmes classiques vulnérables des référentiels NIST
+                                    (NIST IR 8547).</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Date incertaine <span class="tag tag--danger">« Q-Day »</span></th>
+                                <td>Arrivée d'un ordinateur quantique « cryptographiquement pertinent ». Longtemps
+                                    estimé vers 2035-2040, il est désormais jugé possible <strong>dès le début des
+                                        années 2030</strong> par plusieurs acteurs (Google, Cloudflare, IBM), sans
+                                    consensus sur une date. Une étude de l'agence allemande de
+                                    cybersécurité (<strong>BSI</strong>), reprise par l'ANSSI, évalue à
+                                    <strong>19–34 %</strong> la probabilité qu'un ordinateur quantique soit capable de
+                                    casser RSA-2048 en 24 heures au cours de la prochaine décennie.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </section>
+
+            <!-- ---------- SECTION 7 ---------- -->
+            <section id="section-7" class="veille-section">
+                <p class="section-num">Section 07</p>
+                <h2>Stack technologique et outils d'expérimentation</h2>
+
+                <div class="cards-grid">
+                    <article class="mini-card" data-tilt="5">
+                        <i class="fas fa-cubes" aria-hidden="true"></i>
+                        <h3>Open Quantum Safe (OQS)</h3>
+                        <p>
+                            Projet open-source qui intègre les algorithmes post-quantiques dans des bibliothèques
+                            cryptographiques existantes comme <strong>OpenSSL</strong>, permettant de tester des
+                            connexions TLS hybrides sur des serveurs réels (Apache, Nginx).
+                        </p>
+                    </article>
+                    <article class="mini-card" data-tilt="5">
+                        <i class="fab fa-python" aria-hidden="true"></i>
+                        <h3>Qiskit (IBM) / Cirq (Google)</h3>
+                        <p>
+                            Frameworks Python permettant de simuler des circuits quantiques sur un ordinateur
+                            classique, ou de les exécuter sur de <strong>vrais ordinateurs quantiques</strong> via le
+                            cloud (IBM Quantum Platform, Amazon Braket, Azure Quantum).
+                            Utile en BTS SIO pour comprendre concrètement le fonctionnement d'un qubit sans matériel
+                            spécialisé.
+                        </p>
+                    </article>
+                    <article class="mini-card" data-tilt="5">
+                        <i class="fas fa-network-wired" aria-hidden="true"></i>
+                        <h3>VPN et TLS hybrides</h3>
+                        <p>
+                            Mise en place de tunnels combinant un algorithme classique et un algorithme post-quantique
+                            (IPsec/IKEv2 avec ML-KEM, WireGuard expérimental) pour une transition progressive sans
+                            rupture de compatibilité.
+                        </p>
+                    </article>
+                    <article class="mini-card" data-tilt="5">
+                        <i class="fas fa-terminal" aria-hidden="true"></i>
+                        <h3>OpenSSL 3.5 / OpenSSH 10</h3>
+                        <p>
+                            OpenSSL 3.5 intègre nativement ML-KEM, ML-DSA et SLH-DSA (échange hybride
+                            <code>X25519MLKEM768</code>) ; OpenSSH 10 utilise par défaut
+                            <code>mlkem768x25519-sha256</code>. La PQC est donc déjà testable sur un simple serveur
+                            Linux, en TP SISR.
+                        </p>
+                    </article>
+                    <article class="mini-card" data-tilt="5">
+                        <i class="fas fa-magnifying-glass-chart" aria-hidden="true"></i>
+                        <h3>Inventaire cryptographique</h3>
+                        <p>
+                            Scanners réseau et analyseurs de certificats (<code>testssl.sh</code>, scans de
+                            certificats X.509) permettant de repérer, dans un parc informatique, les usages de RSA/ECC
+                            à migrer en priorité — démarche recommandée par l'ANSSI comme première étape de la
+                            transition.
+                        </p>
+                    </article>
+                </div>
+            </section>
+
+            <!-- ---------- SECTION 8 ---------- -->
+            <section id="section-8" class="veille-section">
+                <p class="section-num">Section 08</p>
+                <h2>Cas d'usage et résultats concrets</h2>
+
+                <ul class="liste-cle">
+                    <li>
+                        <strong>Sécurisation des serveurs et infrastructures</strong>
+                        <span class="badge">cœur de métier SISR</span><br>
+                        Mise à jour des certificats X.509 et des serveurs Apache/Nginx pour supporter des suites
+                        cryptographiques hybrides ; mise à jour des équipements réseau (pare-feu, VPN IPsec/SSH)
+                        suivant les fiches techniques publiées par l'ANSSI pour chaque protocole.
+                    </li>
+                    <li>
+                        <strong>Navigateurs Web et CDN</strong><br>
+                        Chrome, Firefox, Safari et Cloudflare utilisent par défaut l'échange de clé hybride
+                        <strong>X25519 + ML-KEM</strong>. Cloudflare protège plus de 65 % du trafic humain qu'il reçoit
+                        et vise désormais l'<strong>authentification post-quantique</strong> (certificats et signatures
+                        ML-DSA) d'ici 2029. En octobre 2026, <strong>Google Meet</strong> a commencé à basculer ses
+                        appels vers la cryptographie post-quantique.
+                    </li>
+                    <li>
+                        <strong>Réseaux gouvernementaux et secteurs critiques</strong><br>
+                        Déploiement de liaisons de fibre optique utilisant la QKD pour des communications
+                        ultra-sécurisées entre sites sensibles (ministères, opérateurs d'infrastructures critiques),
+                        en complément — et non en remplacement — de la cryptographie classique.
+                    </li>
+                    <li>
+                        <strong>Secteur bancaire, paiement et cryptomonnaies</strong><br>
+                        Les autorités de régulation financières exigent des feuilles de route de migration PQC pour les
+                        systèmes de paiement et les infrastructures à clé publique (PKI) bancaires. Les travaux de
+                        Google de 2026 ont aussi alerté l'écosystème Bitcoin/Ethereum, dont les signatures reposent sur
+                        des courbes elliptiques.
+                    </li>
+                </ul>
+            </section>
+
+            <!-- ---------- SECTION 9 ---------- -->
+            <section id="section-9" class="veille-section">
+                <p class="section-num">Section 09</p>
+                <h2>Défis relevés et solutions</h2>
+
+                <div class="table-wrap">
+                    <table class="veille-table">
+                        <caption>Principaux obstacles à la transition et réponses apportées</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Défi</th>
+                                <th scope="col">Solution</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Taille des clés et des signatures</th>
+                                <td>Les clés et signatures PQC sont nettement plus volumineuses que leurs équivalents
+                                    classiques, ce qui augmente la bande passante consommée et le stockage requis sur
+                                    les serveurs, en particulier pour les objets connectés (IoT) aux ressources
+                                    limitées.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Migration d'infrastructures complexes et hétérogènes</th>
+                                <td>Mise en œuvre de la <strong>crypto-agilité</strong> : concevoir les systèmes avec
+                                    une couche d'abstraction permettant de changer d'algorithme cryptographique sans
+                                    réécrire l'ensemble du code, en suivant une migration progressive par phases
+                                    (préparation, hybridation, transition, nettoyage).</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Manque de recul sur la robustesse des nouveaux algorithmes</th>
+                                <td>Recours obligatoire à l'<strong>hybridation</strong> (classique + post-quantique)
+                                    tant que la confiance dans les algorithmes PQC n'est pas équivalente à celle
+                                    accordée à RSA/ECC après plusieurs décennies d'étude. Deux candidats du concours
+                                    NIST (<strong>SIKE</strong>, <strong>Rainbow</strong>) ont d'ailleurs été cassés
+                                    par cryptanalyse classique pendant l'évaluation, ce qui justifie cette prudence.
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Instabilité physique des qubits (décohérence)</th>
+                                <td>Recherche matérielle : refroidissement proche du zéro absolu, codes correcteurs
+                                    d'erreurs quantiques, augmentation du nombre de qubits logiques fiables — un défi
+                                    qui concerne la fabrication des ordinateurs quantiques eux-mêmes, pas la
+                                    cryptographie post-quantique.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ---------- SECTION 10 ---------- -->
+            <section id="section-10" class="veille-section">
+                <p class="section-num">Section 10</p>
+                <h2>Cadre normatif et recommandations</h2>
+
+                <h3><i class="fas fa-landmark" aria-hidden="true"></i> Le NIST (États-Unis)</h3>
+                <p>
+                    A finalisé en <strong>août 2024</strong> trois standards (FIPS 203, 204, 205) au terme d'un
+                    concours international lancé en 2016 et ayant réuni <strong>82 algorithmes candidats</strong> à
+                    l'origine, puis sélectionné HQC en 2025. Il prévoit la dépréciation de RSA/ECC à partir de 2030 et
+                    leur retrait d'ici <strong>2035</strong> (NIST IR 8547). Deux normes restent attendues :
+                    <strong>FN-DSA</strong> (futur FIPS 206, signature compacte issue de Falcon) et le standard
+                    <strong>HQC</strong> (futur FIPS 207), prévu pour 2027.
+                </p>
+
+                <h3><i class="fas fa-globe" aria-hidden="true"></i> Au niveau international — l'appel du G7
+                    <span class="badge">septembre 2026</span></h3>
+                <p>
+                    Le 3 septembre 2026, le groupe de travail cybersécurité du <strong>G7</strong> a publié
+                    <em>« Preparing for the Post-Quantum Era: A Call to Action »</em>. Proposé par l'<strong>ANSSI</strong>
+                    et négocié avec les agences des pays du G7 et de l'Union européenne, il demande aux États et aux
+                    organisations de démarrer la migration sans attendre et donne des repères de gouvernance (équipes
+                    dédiées, budget, achats). Aux <strong>États-Unis</strong>, le décret présidentiel
+                    <strong>EO 14412</strong> (22 juin 2026) organise déjà la migration des systèmes fédéraux vers les
+                    standards du NIST.
+                </p>
+
+                <h3><i class="fas fa-shield-halved" aria-hidden="true"></i> L'ANSSI (France) — une transition en deux
+                    temps</h3>
+                <ul class="liste-cle">
+                    <li>
+                        <strong>Aujourd'hui — hybridation obligatoire</strong> : combiner systématiquement un
+                        algorithme classique éprouvé avec un algorithme post-quantique, sauf pour les schémas de
+                        signature fondés sur le hachage (SLH-DSA, XMSS, LMS) jugés suffisamment matures pour être
+                        utilisés seuls.
+                    </li>
+                    <li>
+                        <strong>À terme — bascule complète</strong> : une fois les algorithmes post-quantiques
+                        éprouvés par le temps et par la communauté cryptographique, abandon progressif de la
+                        composante classique.
+                    </li>
+                    <li>
+                        <strong>Un calendrier déjà fixé pour les achats publics</strong> : l'ANSSI indique qu'il ne
+                        sera plus raisonnable, <strong>après 2030</strong>, d'acheter des produits de sécurité
+                        n'intégrant pas la cryptographie post-quantique — un repère concret pour les services achats
+                        des entreprises et administrations.
+                    </li>
+                    <li>
+                        <strong>Nouveau — fin des certifications sans PQC dès 2027</strong>
+                        <span class="badge">annoncé en juin 2026</span> : au salon France Quantum, l'ANSSI a annoncé
+                        qu'elle arrêterait progressivement, à partir de 2027, de délivrer certifications et
+                        qualifications aux produits de sécurité n'intégrant pas la cryptographie post-quantique.
+                    </li>
+                </ul>
+
+                <h3><i class="fas fa-earth-europe" aria-hidden="true"></i> Au niveau européen</h3>
+                <p>
+                    Une feuille de route coordonnée pour la transition post-quantique a été publiée par la
+                    <strong>Commission européenne en juin 2025</strong> : démarrer la transition d'ici fin 2026,
+                    protéger les infrastructures critiques d'ici 2030 et migrer autant de systèmes que possible d'ici
+                    2035. L'<strong>ENISA</strong> met à jour ses recommandations en conséquence. Les États membres la
+                    déclinent : en octobre 2026, l'<strong>Allemagne</strong> (BSI) a publié son guide national, avec
+                    une migration des cas d'usage à haut risque au plus tard fin 2030.
+                </p>
+
+                <h3><i class="fas fa-building" aria-hidden="true"></i> Les géants du numérique vont plus vite</h3>
+                <p>
+                    En avril 2026, <strong>Google et Cloudflare</strong> se sont fixé <strong>2029</strong> pour être
+                    entièrement post-quantiques, y compris pour l'authentification — soit six ans avant l'échéance du
+                    NIST.
+                </p>
+
+            </section>
+
+            <!-- ---------- SECTION 11 ---------- -->
+            <section id="section-11" class="veille-section">
+                <p class="section-num">Section 11</p>
+                <h2>Glossaire des termes clés</h2>
+
+                <dl class="glossaire">
+                    <div class="glossaire-item">
+                        <dt>Qubit</dt>
+                        <dd>Unité d'information quantique, capable de représenter une superposition des états 0 et 1.
+                        </dd>
+                    </div>
+                    <div class="glossaire-item">
+                        <dt>Qubit physique / qubit logique</dt>
+                        <dd>Le qubit physique est le composant matériel réel, sujet aux erreurs ; le qubit logique est
+                            un qubit fiable construit à partir de plusieurs qubits physiques grâce à la correction
+                            d'erreurs.</dd>
+                    </div>
+                    <div class="glossaire-item">
+                        <dt>CRQC <span class="dt-en">Cryptographically Relevant Quantum Computer</span></dt>
+                        <dd>Ordinateur quantique « cryptographiquement pertinent », assez puissant pour casser RSA ou
+                            ECC. Il n'existe pas encore en 2026.</dd>
+                    </div>
+                    <div class="glossaire-item">
+                        <dt>Superposition</dt>
+                        <dd>Propriété quantique permettant à un qubit d'être dans une combinaison de plusieurs états à
+                            la fois, tant qu'il n'est pas mesuré.</dd>
+                    </div>
+                    <div class="glossaire-item">
+                        <dt>Décohérence</dt>
+                        <dd>Perte des propriétés quantiques d'un qubit au contact de son environnement, source
+                            d'erreurs dans les calculs quantiques.</dd>
+                    </div>
+                    <div class="glossaire-item">
+                        <dt>Algorithme de Shor</dt>
+                        <dd>Algorithme quantique théorique capable de factoriser de grands nombres efficacement,
+                            menaçant RSA et les courbes elliptiques.</dd>
+                    </div>
+                    <div class="glossaire-item">
+                        <dt>Algorithme de Grover</dt>
+                        <dd>Algorithme quantique accélérant la recherche dans une liste non triée, affaiblissant (sans
+                            casser) la cryptographie symétrique comme l'AES.</dd>
+                    </div>
+                    <div class="glossaire-item">
+                        <dt>RSA / ECC</dt>
+                        <dd>Familles d'algorithmes de cryptographie asymétrique classique, fondées respectivement sur
+                            la factorisation et les courbes elliptiques, vulnérables à l'algorithme de Shor.</dd>
+                    </div>
+                    <div class="glossaire-item">
+                        <dt>PQC <span class="dt-en">Post-Quantum Cryptography</span></dt>
+                        <dd>Cryptographie classique (exécutée sur ordinateur classique) conçue pour résister aux
+                            attaques d'un ordinateur quantique.</dd>
+                    </div>
+                    <div class="glossaire-item">
+                        <dt>ML-KEM <span class="dt-en">ex-Kyber</span></dt>
+                        <dd>Standard NIST (FIPS 203) d'échange de clé post-quantique, fondé sur les réseaux euclidiens
+                            (lattices).</dd>
+                    </div>
+                    <div class="glossaire-item">
+                        <dt>ML-DSA <span class="dt-en">ex-Dilithium</span></dt>
+                        <dd>Standard NIST (FIPS 204) de signature numérique post-quantique, fondé sur les réseaux
+                            euclidiens.</dd>
+                    </div>
+                    <div class="glossaire-item">
+                        <dt>SLH-DSA <span class="dt-en">ex-SPHINCS+</span></dt>
+                        <dd>Standard NIST (FIPS 205) de signature post-quantique fondé uniquement sur des fonctions de
+                            hachage, utilisé comme solution de secours.</dd>
+                    </div>
+                    <div class="glossaire-item">
+                        <dt>FN-DSA <span class="dt-en">ex-Falcon</span></dt>
+                        <dd>Futur standard NIST (FIPS 206) de signature post-quantique fondé sur les réseaux
+                            euclidiens, aux signatures plus compactes que ML-DSA. Toujours à l'état de projet en
+                            octobre 2026.</dd>
+                    </div>
+                    <div class="glossaire-item">
+                        <dt>CBOM <span class="dt-en">Cryptography Bill of Materials</span></dt>
+                        <dd>Inventaire structuré des algorithmes, clés et certificats utilisés par un logiciel ou un
+                            système : point de départ de toute migration post-quantique.</dd>
+                    </div>
+                    <div class="glossaire-item">
+                        <dt>HQC</dt>
+                        <dd>Algorithme d'échange de clé post-quantique sélectionné par le NIST en 2025, fondé sur les
+                            codes correcteurs d'erreurs, servant de solution de secours à ML-KEM.</dd>
+                    </div>
+                    <div class="glossaire-item">
+                        <dt>Cryptographie hybride</dt>
+                        <dd>Combinaison d'un algorithme classique éprouvé et d'un algorithme post-quantique lors d'une
+                            même opération cryptographique, pour cumuler les garanties des deux.</dd>
+                    </div>
+                    <div class="glossaire-item">
+                        <dt>QKD <span class="dt-en">Quantum Key Distribution</span></dt>
+                        <dd>Technique physique (et non mathématique) d'échange de clé utilisant des photons, où toute
+                            interception perturbe détectablement la transmission.</dd>
+                    </div>
+                    <div class="glossaire-item">
+                        <dt>Store Now, Decrypt Later <span class="dt-en">SNDL</span></dt>
+                        <dd>Stratégie consistant à intercepter et stocker des données chiffrées aujourd'hui pour les
+                            déchiffrer plus tard, une fois un ordinateur quantique suffisant disponible.</dd>
+                    </div>
+                    <div class="glossaire-item">
+                        <dt>Crypto-agilité</dt>
+                        <dd>Capacité d'un système d'information à changer d'algorithme cryptographique rapidement et
+                            sans tout reconcevoir.</dd>
+                    </div>
+                    <div class="glossaire-item">
+                        <dt>Q-Day</dt>
+                        <dd>Terme désignant le jour, encore hypothétique, où un ordinateur quantique sera assez
+                            puissant pour casser la cryptographie asymétrique actuellement déployée.</dd>
+                    </div>
+                </dl>
+            </section>
+
+            <!-- ---------- SECTION 12 ---------- -->
+            <section id="section-12" class="veille-section">
+                <p class="section-num">Section 12</p>
+                <h2>Foire aux questions</h2>
+
+                <p class="section-intro">
+                    Les questions les plus fréquentes sur l'ordinateur quantique et la cryptographie post-quantique,
+                    avec une réponse synthétique.
+                </p>
+
+                <div class="faq">
+                    <details class="faq-item">
+                        <summary>Qu'est-ce qui a changé ces derniers mois ? <span class="badge">octobre 2026</span>
+                        </summary>
+                        <p>
+                            Surtout la mobilisation des États : décret présidentiel américain EO 14412 en juin, appel à
+                            l'action du G7 proposé par l'ANSSI en septembre, guide de migration allemand (fin 2030 pour
+                            les cas à haut risque) en octobre. Côté matériel, IBM a réalisé un calcul sur 70 qubits
+                            logiques : la correction d'erreurs progresse, même si casser RSA reste hors de portée.
+                            Côté usages, Google Meet est passé à la PQC.
+                        </p>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>Les ordinateurs quantiques existent-ils vraiment ?</summary>
+                        <p>
+                            Oui. Google (Willow, 105 qubits), IBM (Nighthawk, 120 qubits ; Condor, 1 121 qubits),
+                            Quantinuum (Helios, 98 qubits) ou le français Pasqal en exploitent déjà, et IBM en met
+                            gratuitement à disposition via le cloud. Mais ils sont encore trop petits et trop sujets aux
+                            erreurs pour casser RSA : il faudrait des centaines de milliers de qubits physiques fiables.
+                        </p>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>La menace s'est-elle rapprochée récemment ?</summary>
+                        <p>
+                            Oui. En 2019, on estimait qu'il fallait 20 millions de qubits pour casser RSA-2048 ; en 2025,
+                            Google a ramené ce chiffre à moins d'un million, et des travaux de 2026 parlent de moins de
+                            100 000. Résultat : Google et Cloudflare ont avancé leur objectif de migration
+                            post-quantique à 2029.
+                        </p>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>Pourquoi un BTS SIO SISR devrait-il s'intéresser à la cryptographie post-quantique ?
+                        </summary>
+                        <p>
+                            Parce que la sécurisation des infrastructures réseau (TLS, VPN, certificats, SSH) est au
+                            cœur du métier SISR, et que la migration vers la PQC implique de mettre à jour ces mêmes
+                            briques techniques que l'on configure quotidiennement : pare-feu, serveurs web,
+                            équipements VPN.
+                        </p>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>Quelle est la différence entre cryptographie post-quantique et cryptographie
+                            quantique ?</summary>
+                        <p>
+                            La cryptographie post-quantique (PQC) est de la cryptographie mathématique classique,
+                            exécutée sur des ordinateurs classiques, mais conçue pour résister à un ordinateur
+                            quantique. La cryptographie quantique (comme la QKD) utilise, elle, de véritables
+                            propriétés physiques quantiques (les photons) pour échanger une clé.
+                        </p>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>L'AES est-il menacé par l'ordinateur quantique ?</summary>
+                        <p>
+                            Pas de façon critique : l'algorithme de Grover ne fait que diviser par deux le niveau de
+                            sécurité effectif de l'AES. Passer de l'AES-128 à l'AES-256 suffit donc à conserver un
+                            niveau de sécurité équivalent. Le vrai danger quantique concerne la cryptographie
+                            asymétrique (RSA, ECC), via l'algorithme de Shor.
+                        </p>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>Pourquoi ne pas attendre que l'ordinateur quantique existe vraiment avant de migrer ?
+                        </summary>
+                        <p>
+                            Pour deux raisons : la menace « Store Now, Decrypt Later » rend les données déjà
+                            vulnérables aujourd'hui, et la migration complète d'un système d'information prend
+                            historiquement environ dix ans — il faut donc l'anticiper largement avant l'échéance
+                            estimée du « Q-Day ».
+                        </p>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>Qu'est-ce que l'hybridation et pourquoi l'ANSSI l'impose-t-elle ?</summary>
+                        <p>
+                            L'hybridation consiste à combiner un algorithme classique éprouvé et un algorithme
+                            post-quantique récent lors d'une même opération cryptographique. L'ANSSI l'impose car les
+                            algorithmes PQC, bien que validés par le NIST, ont beaucoup moins de recul (quelques
+                            années) que RSA ou ECC (plusieurs décennies d'étude) ; l'hybridation garantit qu'une
+                            éventuelle faille sur l'un des deux algorithmes ne compromette pas la sécurité globale.
+                        </p>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>As-tu un exemple concret de déploiement déjà en production ?</summary>
+                        <p>
+                            Oui : Chrome, Firefox, Safari et Cloudflare utilisent par défaut un échange de clé hybride
+                            combinant X25519 (classique) et ML-KEM (post-quantique). En avril 2026, plus de 65 % du
+                            trafic humain vers Cloudflare était protégé par la PQC. OpenSSH 10 l'active aussi par
+                            défaut.
+                        </p>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>Quels sont les inconvénients concrets de la PQC pour un administrateur système ou
+                            réseau ?</summary>
+                        <p>
+                            Principalement la taille des clés et signatures, beaucoup plus grande qu'en RSA/ECC
+                            (parfois ×5 à ×50), ce qui augmente la consommation de bande passante, allonge légèrement
+                            les négociations TLS, et peut poser problème sur des équipements aux ressources limitées
+                            (IoT, cartes à puce).
+                        </p>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>La cryptographie post-quantique est-elle obligatoire aujourd'hui ?</summary>
+                        <p>
+                            Non, pas de façon générale : elle est exigée (avec hybridation) pour certains périmètres
+                            réglementés (opérateurs d'importance vitale, produits soumis à un référentiel ANSSI), et
+                            l'ANSSI arrêtera progressivement de certifier les produits sans PQC à partir de 2027. Pour
+                            les autres organisations, c'est une recommandation forte, avec un
+                            repère donné par l'ANSSI : ne plus acheter de produits sans support PQC après 2030.
+                        </p>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>Qu'est-ce que l'algorithme de Shor concrètement, sans les mathématiques complexes ?
+                        </summary>
+                        <p>
+                            C'est un algorithme conçu pour un ordinateur quantique qui permet de retrouver très
+                            rapidement les deux facteurs premiers d'un grand nombre — exactement le calcul qui protège
+                            RSA. Sur un ordinateur classique, ce calcul prendrait un temps astronomique ; sur un
+                            ordinateur quantique suffisamment puissant, il deviendrait réalisable en un temps
+                            raisonnable.
+                        </p>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>Pourquoi le NIST a-t-il choisi plusieurs familles d'algorithmes différentes (réseaux,
+                            hachage, codes) ?</summary>
+                        <p>
+                            Pour limiter le risque qu'une seule grande découverte mathématique ne rende obsolète toute
+                            la PQC d'un coup. Cette précaution s'est révélée justifiée : deux candidats du concours
+                            (SIKE et Rainbow), fondés sur d'autres approches, ont été cassés par cryptanalyse
+                            classique avant la fin du concours.
+                        </p>
+                    </details>
+                </div>
+            </section>
+
+            <!-- ---------- SECTION 13 ---------- -->
+            <section id="section-13" class="veille-section">
+                <p class="section-num">Section 13</p>
+                <h2>Sources et références</h2>
+
+                <ul class="sources">
+                    <li>
+                        <span class="source-org">ANSSI</span>
+                        <a href="https://cyber.gouv.fr/enjeux-technologiques/cryptographie-post-quantique"
+                            target="_blank" rel="noopener noreferrer">Cryptographie post-quantique (PQC)
+                            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                    </li>
+                    <li>
+                        <span class="source-org">NIST</span>
+                        <a href="https://csrc.nist.gov/projects/post-quantum-cryptography" target="_blank"
+                            rel="noopener noreferrer">Post-Quantum Cryptography (CSRC)
+                            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                    </li>
+                    <li>
+                        <span class="source-org">NIST</span>
+                        <a href="https://www.nist.gov/news-events/news/2024/08/nist-releases-first-3-finalized-post-quantum-encryption-standards"
+                            target="_blank" rel="noopener noreferrer">Publication des standards FIPS 203 / 204 / 205
+                            (août 2024)
+                            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                    </li>
+                    <li>
+                        <span class="source-org">Cloudflare</span>
+                        <a href="https://blog.cloudflare.com/nists-first-post-quantum-standards/" target="_blank"
+                            rel="noopener noreferrer">NIST's first post-quantum standards
+                            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                    </li>
+                    <li>
+                        <span class="source-org">IBM</span>
+                        <a href="https://newsroom.ibm.com/2024-08-13-IBM-Developed-Algorithms-Announced-as-Worlds-First-Post-Quantum-Cryptography-Standards"
+                            target="_blank" rel="noopener noreferrer">IBM-Developed Algorithms Announced as NIST's PQC
+                            Standards (2024)
+                            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                    </li>
+                    <li>
+                        <span class="source-org">Cloudflare</span>
+                        <a href="https://www.helpnetsecurity.com/2026/04/07/cloudflare-post-quantum-authentication/"
+                            target="_blank" rel="noopener noreferrer">Cloudflare avance son échéance post-quantique à
+                            2029 (Help Net Security, avril 2026)
+                            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                    </li>
+                    <li>
+                        <span class="source-org">Google</span>
+                        <a href="https://research.google/blog/safeguarding-cryptocurrency-by-disclosing-quantum-vulnerabilities-responsibly/"
+                            target="_blank" rel="noopener noreferrer">Safeguarding cryptocurrency by disclosing quantum
+                            vulnerabilities responsibly (mars 2026)
+                            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                    </li>
+                    <li>
+                        <span class="source-org">The Quantum Insider</span>
+                        <a href="https://thequantuminsider.com/2026/03/31/q-day-just-got-closer-three-papers-in-three-months-are-rewriting-the-quantum-threat-timeline/"
+                            target="_blank" rel="noopener noreferrer">Q-Day Just Got Closer: Three Papers in Three
+                            Months (mars 2026)
+                            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                    </li>
+                    <li>
+                        <span class="source-org">Physics World</span>
+                        <a href="https://physicsworld.com/a/new-findings-shorten-the-road-to-cryptographically-relevant-quantum-computers/"
+                            target="_blank" rel="noopener noreferrer">New findings shorten the road to cryptographically
+                            relevant quantum computers
+                            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                    </li>
+                    <li>
+                        <span class="source-org">Clubic</span>
+                        <a href="https://www.clubic.com/actualite-617680-face-a-la-menace-quantique-l-anssi-renforce-ses-exigences-de-certification.html"
+                            target="_blank" rel="noopener noreferrer">Face à la menace quantique, l'ANSSI renforce ses
+                            exigences de certification (2026)
+                            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                    </li>
+                    <li>
+                        <span class="source-org">Nextgov</span>
+                        <a href="https://www.nextgov.com/emerging-tech/2025/11/ibm-unveils-updated-quantum-computing-products/409456/"
+                            target="_blank" rel="noopener noreferrer">IBM unveils updated quantum computing products
+                            (Nighthawk, Loon — nov. 2025)
+                            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                    </li>
+                    <li>
+                        <span class="source-org">CNRS</span>
+                        <a href="https://lejournal.cnrs.fr/print/2693?page=2" target="_blank"
+                            rel="noopener noreferrer">Les start-up françaises parées pour la transition quantique
+                            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                    </li>
+                    <li>
+                        <span class="source-org">ACN (Italie)</span>
+                        <a href="https://www.acn.gov.it/portale/en/w/transizione-alla-crittografia-post-quantistica-call-to-action-per-i-settori-pubblico-e-privato-dall-anssi-e-partner-g7"
+                            target="_blank" rel="noopener noreferrer">G7 : « Preparing for the Post-Quantum Era: A Call
+                            to Action », proposé par l'ANSSI (3 septembre 2026)
+                            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                    </li>
+                    <li>
+                        <span class="source-org">The Quantum Insider</span>
+                        <a href="https://thequantuminsider.com/2026/10/16/transition-post-quantum-cryptography-national-eu-roadmap-guideline/"
+                            target="_blank" rel="noopener noreferrer">Germany Publishes National Post-Quantum
+                            Cryptography Migration Guideline (16 octobre 2026)
+                            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                    </li>
+                    <li>
+                        <span class="source-org">Google</span>
+                        <a href="https://workspaceupdates.googleblog.com/2026/10/google-meet-now-uses-post-quantum-cryptography.html"
+                            target="_blank" rel="noopener noreferrer">Google Meet now uses post-quantum cryptography
+                            (12 octobre 2026)
+                            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                    </li>
+                    <li>
+                        <span class="source-org">IBM</span>
+                        <a href="https://newsroom.ibm.com/2026-07-30-ibm-and-the-university-of-chicago-demonstrate-quantum-advantage,-establishing-trusted-quantum-computation-on-logical-circuits"
+                            target="_blank" rel="noopener noreferrer">IBM and the University of Chicago demonstrate
+                            quantum advantage on logical circuits (30 juillet 2026)
+                            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                    </li>
+                    <li>
+                        <span class="source-org">Infleqtion</span>
+                        <a href="https://infleqtion.com/infleqtion-achieves-30-entangled-logical-qubits-on-its-sqale-quantum-computer/"
+                            target="_blank" rel="noopener noreferrer">Infleqtion achieves 30 entangled logical qubits
+                            (24 septembre 2026)
+                            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                    </li>
+                    <li>
+                        <span class="source-org">Maison-Blanche</span>
+                        <a href="https://www.whitehouse.gov/wp-content/uploads/2026/06/eo-14412.pdf" target="_blank"
+                            rel="noopener noreferrer">Executive Order 14412 — Securing the Nation Against Advanced
+                            Cryptographic Attacks (22 juin 2026)
+                            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                    </li>
+                    <li>
+                        <span class="source-org">Open Quantum Safe</span>
+                        <a href="https://openquantumsafe.org/" target="_blank" rel="noopener noreferrer">Documentation
+                            technique et intégration OpenSSL
+                            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                    </li>
+                    <li>
+                        <span class="source-org">Wikipédia</span>
+                        <a href="https://en.wikipedia.org/wiki/NIST_Post-Quantum_Cryptography_Standardization"
+                            target="_blank" rel="noopener noreferrer">NIST Post-Quantum Cryptography Standardization
+                            (historique du concours)
+                            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                    </li>
+                </ul>
+
+                <div class="veille-fin">
+                    <p>Veille réalisée dans le cadre du <strong>BTS SIO — option SISR</strong>, année 2025 – 2027.
+                        Dernière mise à jour : 21 octobre 2026.</p>
+                    <div class="veille-fin-actions">
+                        <a href="documents/veille-technologique-pqc.pdf"
+                            download="Veille-Technologique-PQC-Mehdi-Seghier.pdf" class="btn btn-primary">
+                            <i class="fas fa-file-pdf" aria-hidden="true"></i> Télécharger la veille en PDF
+                        </a>
+                        <a href="index.html" class="btn btn-outline">
+                            <i class="fas fa-arrow-left" aria-hidden="true"></i> Retour au portfolio
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <footer>
+        <div class="footer-inner">
+            <p class="footer-copy">&copy; 2026 Mehdi Seghier &mdash; BTS SIO option SISR</p>
+            <div class="footer-socials">
+                <a href="https://github.com/mehdiseg" target="_blank" rel="noopener noreferrer"
+                    class="footer-social-link" aria-label="Profil GitHub de Mehdi Seghier">
+                    <i class="fab fa-github" aria-hidden="true"></i>
+                </a>
+                <!-- TODO Mehdi : remplace ce <span> par
+                     <a href="https://www.linkedin.com/in/ton-profil" target="_blank" rel="noopener noreferrer" ...> -->
+                <span class="footer-social-link footer-social-link--todo" aria-label="Profil LinkedIn (lien à compléter)" title="Lien LinkedIn à compléter">
+                    <i class="fab fa-linkedin" aria-hidden="true"></i>
+                </span>
+            </div>
+        </div>
+    </footer>
+
+    <button type="button" id="back-to-top" aria-label="Retour en haut de la page">
+        <i class="fas fa-arrow-up" aria-hidden="true"></i>
+    </button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+    <script src="assets/js/script.js" defer></script>
+    <script src="assets/js/veille.js" defer></script>
+    <script src="assets/js/v2.js" defer></script>
+    <script src="assets/js/scene-lattice.js" defer></script>
+</body>
+
+</html>

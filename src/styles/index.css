@@ -1,0 +1,505 @@
+@import 'tailwindcss';
+
+/* ===== Jetons ===== */
+:root {
+  --ink: #070b14;
+  --deep: #0c1322;
+  --raise: #121b2e;
+  --line: #1d2843;
+  --fg: #e7ecf5;
+  --muted: #8f9cb6;
+  --accent: #9d8cff;
+  --accent-ink: #0d0a24;
+  --c-infra: #4c8dff;
+  --c-secu: #ff7a45;
+  --c-dev: #3dd68c;
+  --c-stage: #f5c451;
+  --scene-bg: #070b14;
+  --metal: #1a2237;
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+  --ink: #f3f5f9;
+  --deep: #ffffff;
+  --raise: #eaeef5;
+  --line: #d7deea;
+  --fg: #0f1726;
+  --muted: #56637e;
+  --accent: #5b4cf0;
+  --accent-ink: #ffffff;
+  --c-infra: #2563eb;
+  --c-secu: #e0531a;
+  --c-dev: #12a15a;
+  --c-stage: #b97f00;
+  --scene-bg: #f3f5f9;
+  --metal: #c9d2e1;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-deep: var(--deep);
+  --color-raise: var(--raise);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-infra: var(--c-infra);
+  --color-secu: var(--c-secu);
+  --color-dev: var(--c-dev);
+  --color-stage: var(--c-stage);
+  --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-display: 'IBM Plex Sans Condensed', 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+/* ===== Base ===== */
+@layer base {
+html {
+  background: var(--ink);
+  scroll-padding-top: 5rem;
+}
+
+body {
+  background: var(--ink);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+}
+
+/* Classes de composants : dans une couche, pour que les utilitaires Tailwind gardent la priorité */
+@layer components {
+/* ===== Boutons ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  height: 3rem;
+  padding: 0 1.35rem;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  font-size: 0.98rem;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.btn-primary {
+  background: var(--fg);
+  color: var(--ink);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--fg) 18%, transparent);
+}
+
+.btn-ghost {
+  border: 1px solid var(--line);
+  color: var(--fg);
+  background: color-mix(in srgb, var(--deep) 70%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.btn-ghost:hover {
+  border-color: color-mix(in srgb, var(--fg) 40%, transparent);
+}
+
+.btn-sm {
+  height: 2.4rem;
+  padding: 0 0.95rem;
+  font-size: 0.9rem;
+  border-radius: 0.6rem;
+}
+
+/* ===== Titres de section ===== */
+.section-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2.4rem, 5.4vw, 4.4rem);
+  line-height: 1;
+  letter-spacing: -0.015em;
+}
+
+.lede {
+  color: var(--muted);
+  font-size: 1.12rem;
+  max-width: 38rem;
+}
+
+/* ===== Hero ===== */
+.hero-veil {
+  background:
+    linear-gradient(90deg, var(--scene-bg) 0%, color-mix(in srgb, var(--scene-bg) 70%, transparent) 34%, transparent 62%),
+    linear-gradient(0deg, var(--ink) 0%, transparent 28%);
+}
+
+@media (max-width: 900px) {
+  .hero-veil {
+    background: linear-gradient(180deg, transparent 0, transparent 40svh, var(--ink) 60svh);
+  }
+}
+
+.status-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: var(--c-dev);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--c-dev) 60%, transparent);
+  animation: status-pulse 2.2s ease-out infinite;
+}
+
+@keyframes status-pulse {
+  to {
+    box-shadow: 0 0 0 9px transparent;
+  }
+}
+
+/* Étiquettes des équipements dans la scène 3D */
+.topo-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.28rem 0.6rem;
+  border-radius: 0.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--fg);
+  background: color-mix(in srgb, var(--deep) 82%, transparent);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transform: translateY(6px);
+  animation: label-in 0.5s ease forwards;
+  transition:
+    border-color 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease;
+  user-select: none;
+}
+
+.topo-label .dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+}
+
+.topo-label.is-hover {
+  border-color: currentColor;
+  transform: translateY(0) scale(1.08);
+}
+
+.topo-label.is-dim {
+  opacity: 0.35 !important;
+}
+
+@keyframes label-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== Parcours ===== */
+.timeline-rail {
+  position: absolute;
+  left: 0.45rem;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 2px;
+  background: var(--line);
+  border-radius: 2px;
+}
+
+.timeline-fill {
+  position: absolute;
+  inset: 0;
+  transform-origin: top;
+  background: linear-gradient(var(--accent), var(--c-infra));
+  border-radius: 2px;
+}
+
+/* ===== Baie serveur (Compétences) ===== */
+.rack {
+  position: relative;
+  padding: 1.1rem 2.3rem;
+  border-radius: 1rem;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--raise) 90%, transparent), var(--deep));
+  perspective: 1400px;
+}
+
+.rack::before,
+.rack::after {
+  content: '';
+  position: absolute;
+  top: 1rem;
+  bottom: 1rem;
+  width: 1rem;
+  border-radius: 0.35rem;
+  background-color: color-mix(in srgb, var(--ink) 70%, var(--raise));
+  background-image: radial-gradient(circle, var(--line) 2px, transparent 2.5px);
+  background-size: 100% 1.1rem;
+  background-position: center 0.3rem;
+}
+
+.rack::before {
+  left: 0.6rem;
+}
+
+.rack::after {
+  right: 0.6rem;
+}
+
+.rack-unit {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.4rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1.1rem;
+  padding: 1.05rem 1.2rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--line);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 3px, color-mix(in srgb, var(--fg) 2.5%, transparent) 3px 4px),
+    linear-gradient(180deg, color-mix(in srgb, var(--raise) 100%, transparent), color-mix(in srgb, var(--deep) 100%, transparent));
+  transform-style: preserve-3d;
+  transition:
+    transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.45s ease,
+    border-color 0.3s ease;
+}
+
+.rack-unit + .rack-unit {
+  margin-top: 0.55rem;
+}
+
+.rack-unit:hover,
+.rack-unit:focus-within {
+  transform: translateZ(28px) translateX(-6px);
+  border-color: color-mix(in srgb, var(--unit-color) 55%, var(--line));
+  box-shadow: 0 18px 40px -18px color-mix(in srgb, var(--unit-color) 45%, transparent);
+}
+
+.rack-led {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 999px;
+  background: var(--unit-color);
+  box-shadow: 0 0 10px var(--unit-color);
+}
+
+.rack-unit:hover .rack-led,
+.rack-unit:focus-within .rack-led {
+  animation: led-blink 0.9s steps(2, jump-none) infinite;
+}
+
+@keyframes led-blink {
+  50% {
+    opacity: 0.25;
+    box-shadow: none;
+  }
+}
+
+.rack-vents {
+  display: grid;
+  grid-template-columns: repeat(6, 4px);
+  gap: 4px;
+}
+
+.rack-vents span {
+  height: 1.7rem;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--ink) 80%, transparent);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* ===== Cartes projet ===== */
+.project-card {
+  --spot-x: 50%;
+  --spot-y: 50%;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid var(--line);
+  background: var(--deep);
+  transition:
+    border-color 0.25s ease,
+    transform 0.25s ease;
+}
+
+.project-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(28rem circle at var(--spot-x) var(--spot-y), color-mix(in srgb, var(--card-color) 14%, transparent), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.project-card:hover,
+.project-card:focus-within {
+  border-color: color-mix(in srgb, var(--card-color) 45%, var(--line));
+}
+
+.project-card:hover::before,
+.project-card:focus-within::before {
+  opacity: 1;
+}
+
+/* ===== Contenu des fiches projet (HTML de la V2) ===== */
+.prose-project {
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.prose-project p {
+  margin-bottom: 1rem;
+}
+
+.prose-project strong {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.prose-project h4 {
+  color: var(--fg);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin: 1.8rem 0 0.7rem;
+}
+
+.prose-project ul {
+  list-style: disc;
+  padding-left: 1.3rem;
+  margin-bottom: 1rem;
+}
+
+.prose-project li {
+  margin-bottom: 0.35rem;
+}
+
+.prose-project a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prose-project pre {
+  margin: 0 0 1.2rem;
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  border-radius: 0.75rem;
+  border: 1px solid var(--line);
+  background: #060a12;
+  color: #d5def0;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+
+.prose-project code:not(pre code) {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  padding: 0.1em 0.38em;
+  border-radius: 0.35rem;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--fg);
+}
+
+.prose-project .project-modal-code-label {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+}
+
+.prose-project .project-modal-note {
+  font-size: 0.9rem;
+  padding: 0.8rem 1rem;
+  border-left: 3px solid var(--c-stage);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--c-stage) 8%, transparent);
+}
+
+/* ===== Divers ===== */
+kbd {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  line-height: 1;
+  padding: 0.25rem 0.4rem;
+  border-radius: 0.3rem;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--fg) 5%, transparent);
+  color: var(--muted);
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-dot,
+  .rack-unit:hover .rack-led,
+  .rack-unit:focus-within .rack-led {
+    animation: none;
+  }
+
+  .rack-unit,
+  .topo-label {
+    transition: none;
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media print {
+  canvas,
+  .no-print {
+    display: none !important;
+  }
+}
+}

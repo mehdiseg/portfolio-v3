@@ -1,0 +1,490 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>Projet Réservation des salles</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style id="css">
+/* Layout : outil de pilotage — bandeau projet + barre d'enregistrement, onglets, contenu en grilles ; éditeur en fenêtre modale. */
+:root {
+  --bg: #f4f6f8; --surface: #ffffff; --surface-2: #eef1f5; --line: #d7dde5;
+  --fg: #16202b; --muted: #5a6776; --accent: #1d5fa8; --accent-soft: #e2ecf8; --on-accent: #ffffff;
+  --todo: #5b6675; --todo-bg: #eceff3; --doing: #a86200; --doing-bg: #fdf0db;
+  --review: #6b3fb5; --review-bg: #efe8fb; --done: #1f7a4a; --done-bg: #e1f3e9;
+  --late: #c0362c; --late-bg: #fbe5e3; --sisr: #0f7c8a; --slam: #c2672a; --com: #3a5bc7; --today: #fff1c2;
+  --f-ui: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", "Consolas", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11161c; --surface: #1a2129; --surface-2: #222b35; --line: #2f3a46;
+  --fg: #e6ebf1; --muted: #9aa7b6; --accent: #6aa8ec; --accent-soft: #1d2f45; --on-accent: #0c1622;
+  --todo: #a3adba; --todo-bg: #262f39; --doing: #f0a63c; --doing-bg: #3a2c16;
+  --review: #b393ef; --review-bg: #2e2541; --done: #5cc98e; --done-bg: #17342a;
+  --late: #f07a70; --late-bg: #3d1f1d; --sisr: #4fc0cc; --slam: #e0a066; --com: #8aa4f0; --today: #3a3418; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #11161c; --surface: #1a2129; --surface-2: #222b35; --line: #2f3a46;
+  --fg: #e6ebf1; --muted: #9aa7b6; --accent: #6aa8ec; --accent-soft: #1d2f45; --on-accent: #0c1622;
+  --todo: #a3adba; --todo-bg: #262f39; --doing: #f0a63c; --doing-bg: #3a2c16;
+  --review: #b393ef; --review-bg: #2e2541; --done: #5cc98e; --done-bg: #17342a;
+  --late: #f07a70; --late-bg: #3d1f1d; --sisr: #4fc0cc; --slam: #e0a066; --com: #8aa4f0; --today: #3a3418; color-scheme: dark }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-ui); font-size: 14px; line-height: 1.45; }
+.wrap { max-width: 1320px; margin: 0 auto; padding-block: 18px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+button, input, select { font: inherit; color: inherit; }
+.mono, td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+/* Bandeau */
+.head { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: flex-end; justify-content: space-between; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.eyebrow { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-size: 24px; font-weight: 700; margin-top: 2px; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+.field-inline { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.field-inline input { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 5px 8px; }
+.savebar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; margin-top: 14px; }
+.status { font-size: 13px; color: var(--muted); }
+.status.dirty { color: var(--doing); font-weight: 600; }
+.status.err { color: var(--late); font-weight: 600; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 6px 12px; cursor: pointer; font-weight: 600; font-size: 13px; }
+.btn:hover { background: var(--surface-2); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn.primary:disabled { opacity: .45; cursor: not-allowed; }
+.btn.danger { color: var(--late); border-color: var(--late); }
+.btn:focus-visible, .tab:focus-visible, .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.notice { margin: 10px 0 0; font-size: 12.5px; color: var(--muted); }
+
+/* Onglets */
+.tabs { display: flex; gap: 4px; margin: 16px 0 16px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tab { font-weight: 600; color: var(--muted); background: none; border: 0; border-bottom: 3px solid transparent; padding: 8px 14px; cursor: pointer; margin-bottom: -1px; white-space: nowrap; }
+.tab[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.panel { display: grid; gap: 22px; }
+.block { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+.block-h { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.block-h h2 { font-size: 16px; }
+.block-h p { margin: 0; color: var(--muted); font-size: 12.5px; }
+.row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Pastilles */
+.pill { display: inline-flex; align-items: center; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.s-todo { color: var(--todo); background: var(--todo-bg); } .s-doing { color: var(--doing); background: var(--doing-bg); }
+.s-review { color: var(--review); background: var(--review-bg); } .s-done { color: var(--done); background: var(--done-bg); }
+.s-late { color: var(--late); background: var(--late-bg); }
+.team { font: 600 10.5px var(--f-mono); letter-spacing: .04em; padding: 1px 6px; border-radius: 4px; border: 1px solid currentColor; white-space: nowrap; }
+.t-SISR { color: var(--sisr); } .t-SLAM { color: var(--slam); } .t-Commun { color: var(--com); } .t-Jalon { color: var(--fg); }
+
+/* Kanban */
+.kanban { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.col { background: var(--surface-2); border-radius: 8px; padding: 10px; min-width: 0; min-height: 120px; border: 2px dashed transparent; }
+.col.over { border-color: var(--accent); }
+.col-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.count { font: 600 12px var(--f-mono); color: var(--muted); }
+.cards { display: grid; gap: 8px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 9px 10px; display: grid; gap: 6px; cursor: grab; text-align: left; width: 100%; }
+.card:hover { border-color: var(--accent); }
+.card.is-late { border-left: 3px solid var(--late); }
+.card-top { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.code { font: 600 12px var(--f-mono); }
+.card h3 { font-size: 13px; font-weight: 600; line-height: 1.3; }
+.card-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); }
+.card-meta b { color: var(--fg); font-weight: 500; }
+.flag { font-size: 12px; color: var(--late); font-weight: 600; }
+.progress { height: 4px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+.progress span { display: block; height: 100%; background: var(--accent); }
+
+/* Tables */
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; background: var(--surface-2); white-space: nowrap; }
+td.num { white-space: nowrap; }
+tr.click { cursor: pointer; } tr.click:hover td { background: var(--accent-soft); }
+tr.milestone td { font-weight: 600; }
+td input, td select { width: 100%; min-width: 110px; border: 1px solid var(--line); background: var(--surface); border-radius: 5px; padding: 4px 6px; font-size: 13px; }
+
+/* Gantt */
+.gantt { --cols: 25; min-width: 900px; display: grid; gap: 0; }
+.g-row { display: grid; grid-template-columns: 240px repeat(var(--cols), minmax(22px, 1fr)); align-items: center; border-bottom: 1px solid var(--line); min-height: 34px; position: relative; }
+.g-row.head { min-height: 26px; }
+.g-row > * { grid-row: 1; }
+.g-week { font: 600 11px var(--f-mono); color: var(--on-accent); background: var(--accent); text-align: center; padding: 4px 0; border-left: 1px solid var(--surface); }
+.g-day { font: 500 10.5px var(--f-mono); color: var(--muted); text-align: center; padding: 3px 0; }
+.g-day.today { color: var(--late); font-weight: 700; }
+.g-name { grid-column: 1; display: flex; gap: 6px; align-items: center; padding: 6px 8px 6px 2px; min-width: 0; cursor: pointer; font-size: 12.5px; }
+.g-name:hover .t { color: var(--accent); text-decoration: underline; }
+.g-name .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.g-mon { border-left: 1px solid var(--line); align-self: stretch; }
+.g-todaycol { background: var(--today); align-self: stretch; }
+.bar { height: 16px; border-radius: 4px; position: relative; overflow: hidden; z-index: 1; margin: 0 1px; }
+.bar.SISR { background: var(--sisr); } .bar.SLAM { background: var(--slam); } .bar.Commun { background: var(--com); }
+.bar .done { position: absolute; inset: 0 auto 0 0; background: rgba(255,255,255,.38); }
+.bar.slip { background: repeating-linear-gradient(135deg, var(--late) 0 4px, transparent 4px 8px); border: 1px solid var(--late); }
+.dia { width: 13px; height: 13px; transform: rotate(45deg); background: var(--fg); justify-self: center; z-index: 1; }
+.dia.moved { background: none; border: 2px dashed var(--late); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); margin-top: 10px; }
+.legend i { display: inline-block; width: 18px; height: 10px; border-radius: 3px; vertical-align: middle; margin-right: 5px; }
+
+/* Suivi */
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px; display: grid; gap: 6px; min-width: 0; align-content: start; }
+.kpi .lab { font-size: 12px; color: var(--muted); font-weight: 600; }
+.kpi .val { font: 600 26px var(--f-mono); font-variant-numeric: tabular-nums; }
+.kpi .sub { font-size: 12px; color: var(--muted); }
+.kpi.bad { border-color: var(--late); } .kpi.bad .val { color: var(--late); }
+.kpi.good .val { color: var(--done); }
+.meter { height: 10px; background: var(--surface-2); border-radius: 999px; position: relative; }
+.meter .real { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 999px; }
+.meter .plan { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--fg); }
+.empty { color: var(--muted); font-size: 13px; padding: 6px 0; }
+.todo-txt { color: var(--late); font-style: italic; }
+
+/* Éditeur */
+dialog { border: 1px solid var(--line); border-radius: 10px; padding: 0; background: var(--surface); color: var(--fg); width: min(720px, calc(100vw - 32px)); max-height: calc(100vh - 32px); }
+dialog::backdrop { background: rgba(10, 16, 24, .45); }
+.ed-h { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.ed-h h2 { font-size: 16px; }
+.ed-body { padding: 16px 18px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px; }
+.ed-body .full { grid-column: 1 / -1; }
+.ed-body label { display: grid; gap: 4px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.ed-body input, .ed-body select, .ed-body textarea { border: 1px solid var(--line); background: var(--bg); border-radius: 6px; padding: 7px 9px; font-size: 14px; font-weight: 400; color: var(--fg); width: 100%; }
+.ed-body textarea { min-height: 54px; resize: vertical; font-family: inherit; }
+.ed-sep { grid-column: 1 / -1; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; border-top: 1px solid var(--line); padding-top: 10px; }
+.ed-f { display: flex; justify-content: space-between; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+footer { margin-top: 24px; font-size: 12px; color: var(--muted); }
+
+@media (max-width: 900px) { .kanban, .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .kanban, .kpis, .ed-body { grid-template-columns: 1fr; } }
+@media print { @page { size: A4 landscape; margin: 10mm; } .savebar, .tabs, .filters, .notice, #b-addc, [data-delc] { display: none !important; } .wrap { max-width: none; } .block, .kpi, .card { break-inside: avoid; } .scroll { overflow: visible; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap" id="root"><p class="notice">Chargement du projet…</p></div>
+<dialog id="editor" aria-labelledby="ed-title"></dialog>
+
+<script type="application/json" id="state">{"project":{"name":"Projet — Réservation des salles informatiques","start":"2026-11-02","end":"2026-12-04","suivi":"2026-11-20"},"tasks":[{"id":"t1","code":"L1","title":"Préciser les règles fonctionnelles de réservation","team":"SLAM","who":"Étudiant SLAM 1","load":3,"real":3,"start":"2026-11-02","end":"2026-11-06","rev":"","state":"done","progress":100,"dep":"—","result":"Exigences fonctionnelles validables","cause":"","action":"","milestone":false},{"id":"t2","code":"L2","title":"Concevoir le modèle des données (salles, utilisateurs, réservations)","team":"SLAM","who":"Étudiant SLAM 2","load":4,"real":4,"start":"2026-11-09","end":"2026-11-13","rev":"","state":"done","progress":100,"dep":"L1","result":"Modèle de données cohérent","cause":"","action":"","milestone":false},{"id":"t3","code":"L3","title":"Préparer les écrans de consultation des salles","team":"SLAM","who":"Étudiant SLAM 2","load":5,"real":5,"start":"2026-11-11","end":"2026-11-20","rev":"2026-11-24","state":"review","progress":90,"dep":"L2","result":"Interface validée par les utilisateurs pilotes","cause":"Utilisateurs pilotes indisponibles pour la validation","action":"Fixer un créneau de validation avec le référent utilisateurs (Étudiant SLAM 2, 24/11)","milestone":false},{"id":"t4","code":"L4","title":"Développer la réservation et le contrôle des conflits","team":"SLAM","who":"Étudiant SLAM 1","load":8,"real":12,"start":"2026-11-16","end":"2026-11-24","rev":"2026-11-27","state":"doing","progress":60,"dep":"L1, L2","result":"Fonctionnalités applicatives testables","cause":"Anomalie métier détectée en test","action":"Corriger, vérifier, puis réévaluer la charge restante (Étudiant SLAM 1, 27/11)","milestone":false},{"id":"t5","code":"I1","title":"Vérifier les ressources d'infrastructure disponibles","team":"SISR","who":"Mehdi S.","load":2,"real":2,"start":"2026-11-02","end":"2026-11-04","rev":"","state":"done","progress":100,"dep":"—","result":"Inventaire et prérequis confirmés","cause":"","action":"","milestone":false},{"id":"t6","code":"I2","title":"Préparer une machine virtuelle conforme aux caractéristiques validées","team":"SISR","who":"Étudiant SISR 2","load":4,"real":4,"start":"2026-11-05","end":"2026-11-13","rev":"","state":"done","progress":100,"dep":"I1","result":"Environnement serveur initial disponible","cause":"","action":"","milestone":false},{"id":"t7","code":"I3","title":"Configurer les services nécessaires à l'application","team":"SISR","who":"Mehdi S.","load":6,"real":9,"start":"2026-11-16","end":"2026-11-20","rev":"2026-11-24","state":"doing","progress":60,"dep":"I2","result":"Services web, PHP et base de données configurés","cause":"Prérequis réseau incomplets (adresse IP et règles d'accès non confirmées)","action":"Faire confirmer les paramètres réseau par l'administrateur, puis terminer et vérifier la configuration (Mehdi S., 24/11)","milestone":false},{"id":"t8","code":"I4","title":"Mettre en place les accès et les sauvegardes prévues","team":"SISR","who":"Étudiant SISR 2","load":4,"real":4,"start":"2026-11-18","end":"2026-11-24","rev":"","state":"review","progress":90,"dep":"I2","result":"Accès par rôle et sauvegarde automatique configurés","cause":"","action":"","milestone":false},{"id":"t9","code":"I5","title":"Réaliser les tests techniques et documenter l'environnement","team":"SISR","who":"Mehdi S.","load":4,"real":0,"start":"2026-11-25","end":"2026-11-27","rev":"","state":"todo","progress":0,"dep":"I3, I4","result":"Résultats de tests et documentation technique","cause":"","action":"","milestone":false},{"id":"t10","code":"J1","title":"Environnement d'hébergement validé pour les tests applicatifs","team":"Jalon","who":"Resp. SISR","load":0,"real":0,"start":"2026-11-20","end":"2026-11-20","rev":"2026-11-27","state":"todo","progress":0,"dep":"I3, I4","result":"Environnement remis à l'équipe SLAM","cause":"Dépend de I3, en retard","action":"Proposer le décalage du 20/11 au 27/11 au commanditaire, en conservant la date initiale (Resp. projet, 23/11)","milestone":true},{"id":"t11","code":"T10","title":"Réaliser les tests d'intégration SLAM + SISR","team":"Commun","who":"Équipe complète","load":6,"real":0,"start":"2026-11-30","end":"2026-12-02","rev":"","state":"todo","progress":0,"dep":"J1, L4","result":"Service testé de bout en bout, anomalies listées","cause":"","action":"","milestone":false},{"id":"t12","code":"J2","title":"Service de réservation accepté par le commanditaire","team":"Jalon","who":"Commanditaire","load":0,"real":0,"start":"2026-12-04","end":"2026-12-04","rev":"","state":"todo","progress":0,"dep":"T10, I5","result":"Validation finale du service","cause":"","action":"","milestone":true}],"criteria":[{"id":"c1","crit":"Le serveur et les services (web, PHP, base de données) sont disponibles","verif":"Vérifier l'état des services et l'accès à la page d'accueil de l'application","date":"2026-11-26","who":"Mehdi S.","status":"À vérifier"},{"id":"c2","crit":"Un poste habilité accède au service","verif":"Tester la connexion depuis un poste de salle avec un compte autorisé","date":"2026-11-26","who":"Étudiant SISR 2","status":"À vérifier"},{"id":"c3","crit":"Un accès non autorisé est refusé","verif":"Tester depuis un poste ou un compte non habilité : l'accès doit être bloqué","date":"2026-11-26","who":"Étudiant SISR 2","status":"À vérifier"},{"id":"c4","crit":"La sauvegarde est restaurable","verif":"Lancer une sauvegarde puis une restauration sur une copie de test","date":"2026-11-27","who":"Mehdi S.","status":"À vérifier"},{"id":"c5","crit":"La documentation technique est disponible","verif":"Relire la procédure d'installation et les paramètres (sans mot de passe)","date":"2026-12-03","who":"Étudiant SISR 2","status":"À vérifier"}]}</script>
+
+<script id="app">
+(function () {
+  "use strict";
+  var HEAD_HTML = '<title>Projet Réservation des salles</title>\n<meta name="claude:viewport-fit-sides" content="cover">\n<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">\n';
+  var RESET = ':root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}';
+
+  var S = JSON.parse(document.getElementById("state").textContent);
+  var dirty = false, readOnly = false, api = null, apiChecked = false, saving = false, tab = "general";
+  try { if (sessionStorage.getItem("tab")) tab = sessionStorage.getItem("tab"); } catch (e) {}
+  if (location.hash === "#suivi") tab = "suivi";
+
+  var STATES = [["todo", "À faire", "s-todo"], ["doing", "En cours", "s-doing"], ["review", "À valider", "s-review"], ["done", "Terminé", "s-done"]];
+  var TEAMS = ["SISR", "SLAM", "Commun", "Jalon"];
+  var CRIT_STATUS = ["À vérifier", "Conforme", "Non conforme"];
+
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function stateOf(k) { for (var i = 0; i < STATES.length; i++) if (STATES[i][0] === k) return STATES[i]; return STATES[0]; }
+  function fr(iso) { if (!iso) return "—"; var p = iso.split("-"); return p[2] + "/" + p[1]; }
+  function toD(iso) { var p = iso.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function toIso(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  function num(v) { var n = parseFloat(v); return isFinite(n) ? n : 0; }
+  function uid(p) { return p + Math.random().toString(36).slice(2, 8); }
+  function tasksOnly() { return S.tasks.filter(function (t) { return !t.milestone; }); }
+  function isLate(t) { return !t.milestone && t.state !== "done" && t.end && t.end <= S.project.suivi; }
+  function pts(v) { return (v > 0 ? "+" : "") + Math.round(v) + " pts"; }
+  function signed(v, unit) { return (v > 0 ? "+" : "") + (Math.round(v * 10) / 10) + unit; }
+
+  function workDays() {
+    var out = [], d = toD(S.project.start), end = toD(S.project.end);
+    if (end < d) end = new Date(d);
+    var guard = 0;
+    while (d <= end && guard++ < 400) { if (d.getDay() !== 0 && d.getDay() !== 6) out.push(toIso(d)); d.setDate(d.getDate() + 1); }
+    return out;
+  }
+  function idxOf(days, iso, after) {
+    if (!iso) return -1;
+    for (var i = 0; i < days.length; i++) if (days[i] >= iso) return (days[i] === iso || after) ? i : Math.max(0, i - 1);
+    return days.length - 1;
+  }
+
+  /* ---------- Calculs de suivi ---------- */
+  function metrics() {
+    var t = tasksOnly(), total = t.length;
+    var done = t.filter(function (x) { return x.state === "done"; }).length;
+    var planned = t.filter(function (x) { return x.end && x.end <= S.project.suivi; }).length;
+    var rp = total ? done / total * 100 : 0, pp = total ? planned / total * 100 : 0;
+    var loadPlan = 0, loadReal = 0;
+    t.forEach(function (x) { if (num(x.real) > 0) { loadPlan += num(x.load); loadReal += num(x.real); } });
+    var mil = S.tasks.filter(function (x) { return x.milestone && x.rev && x.rev > x.end; });
+    return { total: total, done: done, planned: planned, rp: rp, pp: pp, gap: rp - pp, loadPlan: loadPlan, loadReal: loadReal, mil: mil };
+  }
+  function deviations() {
+    return S.tasks.filter(function (t) {
+      return isLate(t) || (!t.milestone && num(t.real) > num(t.load) && num(t.load) > 0) || (t.rev && t.rev > t.end);
+    }).map(function (t) {
+      var parts = [];
+      if (!t.milestone && num(t.real) > num(t.load) && num(t.load) > 0) parts.push(signed(num(t.real) - num(t.load), " h") + " (" + signed((num(t.real) - num(t.load)) / num(t.load) * 100, " %") + ")");
+      if (t.rev && t.rev > t.end) parts.push((t.milestone ? "jalon " : "fin ") + fr(t.end) + " → " + fr(t.rev));
+      else if (isLate(t)) parts.push("échéance " + fr(t.end) + " dépassée");
+      return { t: t, gap: parts.join(" · ") };
+    });
+  }
+
+  /* ---------- Rendu ---------- */
+  function render() {
+    var root = document.getElementById("root");
+    root.innerHTML =
+      '<header class="head"><div><div class="eyebrow">BTS SIO · Cours 2 · Outil de gestion de projet</div><h1>' + esc(S.project.name) + '</h1></div>' +
+      '<div class="controls">' +
+      '<label class="field-inline" for="f-start">Début <input type="date" id="f-start" value="' + esc(S.project.start) + '"></label>' +
+      '<label class="field-inline" for="f-end">Fin <input type="date" id="f-end" value="' + esc(S.project.end) + '"></label>' +
+      '<label class="field-inline" for="f-suivi"><b>Date du suivi</b> <input type="date" id="f-suivi" value="' + esc(S.project.suivi) + '"></label>' +
+      '</div></header>' +
+      '<div class="savebar"><span class="status" id="status"></span><div class="row-actions">' +
+      '<button class="btn" id="b-add">+ Tâche</button><button class="btn" id="b-addm">+ Jalon</button>' +
+      '<button class="btn primary" id="b-save">Enregistrer</button></div></div>' +
+      '<p class="notice">Cliquez sur une tâche pour la modifier, ou glissez une carte d\'une colonne à l\'autre. Le Gantt, les indicateurs et les écarts se recalculent seuls. Données fictives du cours : une vérification prévue n\'est pas un résultat obtenu.</p>' +
+      '<nav class="tabs" role="tablist" aria-label="Vues du projet">' +
+      '<button class="tab" role="tab" data-tab="general" aria-selected="' + (tab === "general") + '">1. Vue générale</button>' +
+      '<button class="tab" role="tab" data-tab="suivi" aria-selected="' + (tab === "suivi") + '">2. Suivi et pilotage</button></nav>' +
+      '<section class="panel" id="p-general"' + (tab === "general" ? "" : " hidden") + '>' + viewGeneral() + '</section>' +
+      '<section class="panel" id="p-suivi"' + (tab === "suivi" ? "" : " hidden") + '>' + viewSuivi() + '</section>' +
+      '<footer>Projet pédagogique BTS SIO SLAM / SISR · ressources, dates et événements fictifs.</footer>';
+    bind();
+    updateStatus();
+  }
+
+  function card(t) {
+    var st = stateOf(t.state);
+    var flag = t.rev && t.rev > t.end ? "Fin révisée : " + fr(t.rev) : (isLate(t) ? "En retard" : "");
+    var over = num(t.real) > num(t.load) && num(t.load) > 0 ? num(t.real) + " h / " + num(t.load) + " h prévues" : "";
+    return '<button type="button" class="card' + (isLate(t) || flag ? " is-late" : "") + '" draggable="true" data-id="' + t.id + '">' +
+      '<span class="card-top"><span class="code">' + esc(t.code) + '</span><span class="team t-' + esc(t.team) + '">' + esc(t.team.toUpperCase()) + '</span></span>' +
+      '<h3>' + esc(t.title) + '</h3>' +
+      '<span class="card-meta"><span>Resp. <b>' + esc(t.who) + '</b></span><span><b>' + num(t.load) + ' h</b></span><span>Éch. <b>' + fr(t.end) + '</b></span></span>' +
+      (t.dep && t.dep !== "—" ? '<span class="card-meta">Dépend de : <b>' + esc(t.dep) + '</b></span>' : "") +
+      '<span class="progress" aria-label="Avancement ' + num(t.progress) + ' %"><span style="width:' + Math.min(100, num(t.progress)) + '%"></span></span>' +
+      (flag || over ? '<span class="flag">⚠ ' + esc([flag, over].filter(Boolean).join(" · ")) + '</span>' : "") +
+      '</button>';
+  }
+
+  function viewGeneral() {
+    var k = '<div class="kanban">' + STATES.map(function (s) {
+      var items = tasksOnly().filter(function (t) { return t.state === s[0]; });
+      return '<div class="col" data-state="' + s[0] + '"><div class="col-h"><span class="pill ' + s[2] + '">' + s[1] + '</span><span class="count">' + items.length + '</span></div><div class="cards">' + items.map(card).join("") + '</div></div>';
+    }).join("") + '</div>';
+
+    var rows = S.tasks.map(function (t) {
+      var st = t.milestone ? '<span class="pill ' + (t.rev && t.rev > t.end ? "s-late" : "s-todo") + '">' + (t.rev && t.rev > t.end ? "Jalon menacé" : "Jalon") + '</span>' : '<span class="pill ' + stateOf(t.state)[2] + '">' + stateOf(t.state)[1] + '</span>';
+      return '<tr class="click' + (t.milestone ? " milestone" : "") + '" data-id="' + t.id + '"><td class="num">' + (t.milestone ? "◆ " : "") + esc(t.code) + '</td><td>' + esc(t.title) + '</td><td><span class="team t-' + esc(t.team) + '">' + esc(t.team.toUpperCase()) + '</span></td><td>' + esc(t.who) + '</td><td class="num">' + (t.milestone ? "—" : num(t.load) + " h") + '</td><td class="num">' + fr(t.start) + '</td><td class="num">' + fr(t.end) + '</td><td class="num">' + (t.rev ? fr(t.rev) : "") + '</td><td>' + esc(t.result) + '</td><td class="num">' + esc(t.dep) + '</td><td>' + st + '</td></tr>';
+    }).join("");
+
+    return '<div class="block"><div class="block-h"><h2>Tableau des tâches</h2><p>À faire → En cours → À valider → Terminé</p></div>' + k + '</div>' +
+      '<div class="block"><div class="block-h"><h2>Planning (diagramme de Gantt)</h2><p>Calculé à partir des dates des tâches</p></div><div class="scroll">' + gantt() + '</div>' +
+      '<div class="legend"><span><i style="background:var(--sisr)"></i>SISR</span><span><i style="background:var(--slam)"></i>SLAM</span><span><i style="background:var(--com)"></i>Commun</span>' +
+      '<span><i style="background:repeating-linear-gradient(135deg,var(--late) 0 3px,transparent 3px 6px);border:1px solid var(--late)"></i>Glissement (fin révisée)</span><span>◆ Jalon · ◇ nouvelle date proposée</span><span><i style="background:var(--today)"></i>Date du suivi</span></div></div>' +
+      '<div class="block"><div class="block-h"><h2>Détail des tâches</h2><p>Cliquez sur une ligne pour la modifier</p></div><div class="scroll"><table><thead><tr><th>Code</th><th>Tâche</th><th>Équipe</th><th>Responsable</th><th>Charge</th><th>Début</th><th>Fin prévue</th><th>Fin révisée</th><th>Résultat attendu</th><th>Dépend de</th><th>État</th></tr></thead><tbody>' + rows + '</tbody></table></div></div>';
+  }
+
+  function gantt() {
+    var days = workDays(), n = days.length, si = idxOf(days, S.project.suivi, false);
+    var h1 = '<div class="g-row head"><span></span>', h2 = '<div class="g-row head"><span class="g-name" style="cursor:default;color:var(--muted);font-size:11px;font-weight:600">TÂCHE</span>';
+    var i = 0;
+    while (i < n) {
+      var d = toD(days[i]), j = i;
+      while (j + 1 < n && toD(days[j + 1]).getDay() > d.getDay() && (toD(days[j + 1]) - d) < 7 * 864e5) j++;
+      var wk = Math.floor((d - toD(days[0])) / (7 * 864e5)) + 1;
+      h1 += '<span class="g-week" style="grid-column:' + (i + 2) + ' / ' + (j + 3) + '">S' + wk + ' · ' + fr(days[i]) + '</span>';
+      i = j + 1;
+    }
+    days.forEach(function (iso, k) { h2 += '<span class="g-day' + (k === si ? " today" : "") + '" style="grid-column:' + (k + 2) + '">' + iso.slice(8) + '</span>'; });
+    h1 += '</div>'; h2 += '</div>';
+    var body = S.tasks.map(function (t) {
+      var r = '<div class="g-row" data-id="' + t.id + '"><span class="g-name" data-id="' + t.id + '"><span class="code">' + (t.milestone ? "◆" : "") + esc(t.code) + '</span><span class="t" title="' + esc(t.title) + '">' + esc(t.title) + '</span></span>';
+      days.forEach(function (iso, k) { if (toD(iso).getDay() === 1 && k > 0) r += '<span class="g-mon" style="grid-column:' + (k + 2) + '"></span>'; });
+      if (si >= 0 && S.project.suivi >= days[0] && S.project.suivi <= days[n - 1]) r += '<span class="g-todaycol" style="grid-column:' + (si + 2) + '"></span>';
+      if (t.milestone) {
+        var a = idxOf(days, t.end, true);
+        if (a >= 0) r += '<span class="dia" style="grid-column:' + (a + 2) + '" title="Prévu ' + fr(t.end) + '"></span>';
+        if (t.rev && t.rev > t.end) { var b = idxOf(days, t.rev, true); r += '<span class="dia moved" style="grid-column:' + (b + 2) + '" title="Proposé ' + fr(t.rev) + '"></span>'; }
+      } else if (t.start && t.end) {
+        var s0 = idxOf(days, t.start, true), e0 = idxOf(days, t.end, false);
+        if (e0 < s0) e0 = s0;
+        r += '<span class="bar ' + esc(t.team) + '" style="grid-column:' + (s0 + 2) + ' / ' + (e0 + 3) + '"><span class="done" style="width:' + Math.min(100, num(t.progress)) + '%"></span></span>';
+        if (t.rev && t.rev > t.end) { var e1 = idxOf(days, t.rev, false); if (e1 > e0) r += '<span class="bar slip" style="grid-column:' + (e0 + 3) + ' / ' + (e1 + 3) + '"></span>'; }
+      }
+      return r + '</div>';
+    }).join("");
+    return '<div class="gantt" style="--cols:' + n + '">' + h1 + h2 + body + '</div>';
+  }
+
+  function viewSuivi() {
+    var m = metrics(), dv = deviations();
+    var kpis = '<div class="kpis">' +
+      '<div class="kpi' + (m.done < m.planned ? " bad" : " good") + '"><span class="lab">Tâches terminées</span><span class="val">' + m.done + ' / ' + m.total + '</span><span class="sub">Prévu au ' + fr(S.project.suivi) + ' : <b class="mono">' + m.planned + ' / ' + m.total + '</b></span></div>' +
+      '<div class="kpi' + (m.gap < 0 ? " bad" : " good") + '"><span class="lab">Avancement prévu / réalisé</span><span class="val">' + Math.round(m.rp) + ' %</span><div class="meter" aria-label="Réalisé ' + Math.round(m.rp) + ' %, prévu ' + Math.round(m.pp) + ' %"><span class="real" style="width:' + Math.min(100, m.rp) + '%"></span><span class="plan" style="left:' + Math.min(100, m.pp) + '%"></span></div><span class="sub">Prévu <b class="mono">' + Math.round(m.pp) + ' %</b> · écart <b class="mono">' + pts(m.gap) + '</b></span></div>' +
+      '<div class="kpi' + (m.loadReal > m.loadPlan ? " bad" : " good") + '"><span class="lab">Charge des tâches commencées</span><span class="val">' + m.loadReal + ' h</span><span class="sub">Prévu <b class="mono">' + m.loadPlan + ' h</b> · écart <b class="mono">' + signed(m.loadReal - m.loadPlan, " h") + '</b></span></div>' +
+      '<div class="kpi' + (m.mil.length ? " bad" : " good") + '"><span class="lab">Jalons menacés</span><span class="val">' + m.mil.length + '</span><span class="sub">' + (m.mil.length ? esc(m.mil.map(function (x) { return x.code + " : " + fr(x.end) + " → " + fr(x.rev); }).join(" · ")) : "Aucun jalon décalé") + '</span></div></div>';
+
+    var loadRows = tasksOnly().filter(function (t) { return num(t.real) > 0; }).map(function (t) {
+      var g = num(t.real) - num(t.load);
+      return '<tr class="click" data-id="' + t.id + '"><td>' + esc(t.code + " — " + t.title) + '</td><td class="num">' + num(t.load) + ' h</td><td class="num">' + num(t.real) + ' h</td><td class="num">' + signed(g, " h") + '</td><td class="num">' + (num(t.load) ? signed(g / num(t.load) * 100, " %") : "—") + '</td><td>' + (g > 0 ? "Charge supérieure à l'estimation" : g < 0 ? "Charge inférieure à l'estimation" : "Conforme à l'estimation") + '</td></tr>';
+    }).join("");
+    var ind = '<div class="block"><div class="block-h"><h2>Indicateurs : prévu / réalisé / écart</h2><p>Bilan au ' + fr(S.project.suivi) + ' · calculé automatiquement</p></div><div class="scroll"><table><thead><tr><th>Indicateur</th><th>Prévu</th><th>Réalisé</th><th>Écart</th><th>Écart %</th><th>Observation</th></tr></thead><tbody>' +
+      '<tr><td>Tâches terminées</td><td class="num">' + m.planned + '</td><td class="num">' + m.done + '</td><td class="num">' + signed(m.done - m.planned, " tâche(s)") + '</td><td class="num">—</td><td>' + (m.done < m.planned ? "Avancement inférieur aux prévisions" : "Avancement conforme ou en avance") + '</td></tr>' +
+      '<tr><td>Taux de tâches terminées</td><td class="num">' + Math.round(m.pp) + ' %</td><td class="num">' + Math.round(m.rp) + ' %</td><td class="num">' + pts(m.gap) + '</td><td class="num">—</td><td>Part des tâches, pas de la charge totale</td></tr>' +
+      loadRows + '</tbody></table></div></div>';
+
+    var dev = '<div class="block"><div class="block-h"><h2>Écarts, causes et actions correctives proposées</h2><p>Liste automatique des tâches en retard ou en dépassement · cliquez pour renseigner la cause et l\'action</p></div>' +
+      (dv.length ? '<div class="scroll"><table><thead><tr><th>Tâche</th><th>Écart constaté</th><th>Cause identifiée</th><th>Action corrective proposée</th><th>Resp.</th></tr></thead><tbody>' + dv.map(function (d) {
+        return '<tr class="click" data-id="' + d.t.id + '"><td><b>' + esc(d.t.code) + '</b> ' + esc(d.t.title) + '</td><td class="num">' + esc(d.gap) + '</td><td>' + (d.t.cause ? esc(d.t.cause) : '<span class="todo-txt">À renseigner</span>') + '</td><td>' + (d.t.action ? esc(d.t.action) : '<span class="todo-txt">À renseigner</span>') + '</td><td>' + esc(d.t.who) + '</td></tr>';
+      }).join("") + '</tbody></table></div><p class="notice">Propositions à valider par le responsable du projet. Interdit : supprimer les tests de sécurité ou de sauvegarde pour rattraper un retard.</p>' : '<p class="empty">Aucun écart à la date du suivi.</p>') + '</div>';
+
+    var crit = '<div class="block"><div class="block-h"><h2>Conformité du livrable : environnement d\'hébergement (SISR)</h2><button class="btn" id="b-addc">+ Critère</button></div><div class="scroll"><table><thead><tr><th>Critère de conformité</th><th>Vérification prévue</th><th>Date prévue</th><th>Responsable</th><th>Statut</th><th></th></tr></thead><tbody>' +
+      S.criteria.map(function (c) {
+        return '<tr data-cid="' + c.id + '"><td><input data-k="crit" aria-label="Critère" value="' + esc(c.crit) + '"></td><td><input data-k="verif" aria-label="Vérification prévue" value="' + esc(c.verif) + '"></td><td><input type="date" data-k="date" aria-label="Date prévue" value="' + esc(c.date) + '"></td><td><input data-k="who" aria-label="Responsable" value="' + esc(c.who) + '"></td><td><select data-k="status" aria-label="Statut">' + CRIT_STATUS.map(function (s) { return '<option' + (s === c.status ? " selected" : "") + '>' + s + '</option>'; }).join("") + '</select></td><td><button class="btn danger" data-delc="' + c.id + '" aria-label="Supprimer ce critère">✕</button></td></tr>';
+      }).join("") + '</tbody></table></div><p class="notice">Statut « À vérifier » tant que la vérification n\'a pas réellement été faite. Le livrable n\'est conforme que si tous les critères essentiels le sont ; la validation finale revient au commanditaire.</p></div>';
+    return kpis + ind + dev + crit;
+  }
+
+  /* ---------- Interactions ---------- */
+  function bind() {
+    var root = document.getElementById("root");
+    root.querySelectorAll(".tab").forEach(function (b) { b.addEventListener("click", function () { tab = b.dataset.tab; try { sessionStorage.setItem("tab", tab); } catch (e) {} render(); }); });
+    [["f-start", "start"], ["f-end", "end"], ["f-suivi", "suivi"]].forEach(function (p) {
+      document.getElementById(p[0]).addEventListener("change", function (e) { if (e.target.value) { S.project[p[1]] = e.target.value; change(); } });
+    });
+    document.getElementById("b-save").addEventListener("click", save);
+    document.getElementById("b-add").addEventListener("click", function () { openEditor(null, false); });
+    document.getElementById("b-addm").addEventListener("click", function () { openEditor(null, true); });
+    root.querySelectorAll("[data-id].card, tr.click[data-id], .g-name[data-id]").forEach(function (el) {
+      el.addEventListener("click", function () { openEditor(el.dataset.id); });
+    });
+    root.querySelectorAll(".card").forEach(function (c) {
+      c.addEventListener("dragstart", function (e) { e.dataTransfer.setData("text/plain", c.dataset.id); e.dataTransfer.effectAllowed = "move"; });
+    });
+    root.querySelectorAll(".col").forEach(function (col) {
+      col.addEventListener("dragover", function (e) { e.preventDefault(); col.classList.add("over"); });
+      col.addEventListener("dragleave", function () { col.classList.remove("over"); });
+      col.addEventListener("drop", function (e) {
+        e.preventDefault(); col.classList.remove("over");
+        var t = find(e.dataTransfer.getData("text/plain"));
+        if (t && t.state !== col.dataset.state) { t.state = col.dataset.state; if (t.state === "done") t.progress = 100; change(); }
+      });
+    });
+    root.querySelectorAll("tr[data-cid] [data-k]").forEach(function (inp) {
+      inp.addEventListener("change", function () {
+        var c = S.criteria.find(function (x) { return x.id === inp.closest("tr").dataset.cid; });
+        if (c) { c[inp.dataset.k] = inp.value; dirty = true; updateStatus(); }
+      });
+    });
+    root.querySelectorAll("[data-delc]").forEach(function (b) {
+      b.addEventListener("click", function () { S.criteria = S.criteria.filter(function (x) { return x.id !== b.dataset.delc; }); change(); });
+    });
+    var addc = document.getElementById("b-addc");
+    if (addc) addc.addEventListener("click", function () { S.criteria.push({ id: uid("c"), crit: "", verif: "", date: S.project.suivi, who: "", status: "À vérifier" }); change(); });
+  }
+  function find(id) { return S.tasks.find(function (t) { return t.id === id; }); }
+  function change() { dirty = true; render(); }
+
+  /* ---------- Éditeur de tâche ---------- */
+  var confirmDel = false;
+  function openEditor(id, milestone) {
+    var t = id ? find(id) : null, isNew = !t;
+    if (isNew) t = { id: uid("t"), code: milestone ? "J" + (S.tasks.filter(function (x) { return x.milestone; }).length + 1) : "", title: "", team: milestone ? "Jalon" : "SISR", who: "", load: milestone ? 0 : 2, real: 0, start: S.project.suivi, end: S.project.suivi, rev: "", state: "todo", progress: 0, dep: "—", result: "", cause: "", action: "", milestone: !!milestone };
+    var m = t.milestone;
+    var dlg = document.getElementById("editor");
+    confirmDel = false;
+    function opt(list, cur) { return list.map(function (o) { var v = Array.isArray(o) ? o[0] : o, l = Array.isArray(o) ? o[1] : o; return '<option value="' + esc(v) + '"' + (v === cur ? " selected" : "") + '>' + esc(l) + '</option>'; }).join(""); }
+    dlg.innerHTML = '<form method="dialog" id="ed-form">' +
+      '<div class="ed-h"><h2 id="ed-title">' + (isNew ? (m ? "Nouveau jalon" : "Nouvelle tâche") : "Modifier " + esc(t.code)) + '</h2><button type="button" class="btn" id="ed-x" aria-label="Fermer">✕</button></div>' +
+      '<div class="ed-body">' +
+      '<label>Code<input id="e-code" required value="' + esc(t.code) + '"></label>' +
+      '<label>Équipe<select id="e-team">' + opt(m ? ["Jalon"] : ["SISR", "SLAM", "Commun"], t.team) + '</select></label>' +
+      '<label class="full">Intitulé<input id="e-title" required value="' + esc(t.title) + '"></label>' +
+      '<label>Responsable<input id="e-who" value="' + esc(t.who) + '"></label>' +
+      (m ? '' : '<label>État<select id="e-state">' + opt(STATES.map(function (s) { return [s[0], s[1]]; }), t.state) + '</select></label>') +
+      (m ? '<label>Date prévue<input type="date" id="e-end" value="' + esc(t.end) + '"></label>' :
+        '<label>Début<input type="date" id="e-start" value="' + esc(t.start) + '"></label><label>Fin prévue<input type="date" id="e-end" value="' + esc(t.end) + '"></label>') +
+      '<label>' + (m ? "Nouvelle date proposée" : "Fin révisée (si retard)") + '<input type="date" id="e-rev" value="' + esc(t.rev) + '"></label>' +
+      (m ? '' : '<label>Charge prévue (h)<input type="number" min="0" step="0.5" id="e-load" value="' + num(t.load) + '"></label><label>Charge réelle consommée (h)<input type="number" min="0" step="0.5" id="e-real" value="' + num(t.real) + '"></label><label>Avancement (%)<input type="number" min="0" max="100" step="5" id="e-progress" value="' + num(t.progress) + '"></label>') +
+      '<label>Dépend de<input id="e-dep" value="' + esc(t.dep) + '"></label>' +
+      '<label class="full">Résultat attendu<input id="e-result" value="' + esc(t.result) + '"></label>' +
+      '<div class="ed-sep">Pilotage (si écart)</div>' +
+      '<label class="full">Cause identifiée<textarea id="e-cause">' + esc(t.cause) + '</textarea></label>' +
+      '<label class="full">Action corrective proposée<textarea id="e-action">' + esc(t.action) + '</textarea></label>' +
+      '</div><div class="ed-f">' + (isNew ? '<span></span>' : '<button type="button" class="btn danger" id="ed-del">Supprimer</button>') +
+      '<div class="row-actions"><button type="button" class="btn" id="ed-cancel">Annuler</button><button type="submit" class="btn primary">Appliquer</button></div></div></form>';
+    var close = function () { dlg.close(); };
+    dlg.querySelector("#ed-x").onclick = close;
+    dlg.querySelector("#ed-cancel").onclick = close;
+    var del = dlg.querySelector("#ed-del");
+    if (del) del.onclick = function () {
+      if (!confirmDel) { confirmDel = true; del.textContent = "Confirmer la suppression"; return; }
+      S.tasks = S.tasks.filter(function (x) { return x.id !== t.id; }); close(); change();
+    };
+    dlg.querySelector("#ed-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var g = function (k) { var el = dlg.querySelector("#e-" + k); return el ? el.value : null; };
+      t.code = g("code").trim() || t.code; t.title = g("title").trim(); t.team = g("team"); t.who = g("who").trim();
+      t.end = g("end") || t.end; t.start = m ? t.end : (g("start") || t.start); if (!m && t.end < t.start) t.end = t.start;
+      t.rev = g("rev") || ""; if (t.rev && t.rev <= t.end) t.rev = "";
+      if (!m) { t.state = g("state"); t.load = num(g("load")); t.real = num(g("real")); t.progress = Math.max(0, Math.min(100, num(g("progress")))); if (t.state === "done") t.progress = 100; }
+      t.dep = g("dep").trim() || "—"; t.result = g("result").trim(); t.cause = g("cause").trim(); t.action = g("action").trim();
+      if (isNew) S.tasks.push(t);
+      close(); change();
+    });
+    dlg.showModal();
+    dlg.querySelector(isNew ? "#e-code" : "#e-title").focus();
+  }
+
+  /* ---------- Enregistrement (republie la page avec le nouvel état) ---------- */
+  function updateStatus() {
+    var st = document.getElementById("status"), btn = document.getElementById("b-save");
+    if (!st) return;
+    st.className = "status";
+    if (saving) { st.textContent = "Enregistrement…"; btn.disabled = true; return; }
+    if (readOnly) { st.textContent = "Lecture seule : vous pouvez consulter et tester, mais pas enregistrer."; btn.disabled = true; if (dirty) st.className = "status dirty"; return; }
+    if (apiChecked && !api) { btn.textContent = "Télécharger la version modifiée"; btn.disabled = !dirty; st.textContent = dirty ? "Modifications non enregistrées : téléchargez le fichier pour les garder." : "Cliquez sur une tâche pour la modifier"; if (dirty) st.className = "status dirty"; return; }
+    btn.disabled = !dirty;
+    if (dirty) { st.textContent = "Modifications non enregistrées"; st.className = "status dirty"; }
+    else st.textContent = "Tout est enregistré · cliquez sur une tâche pour la modifier";
+  }
+  function buildDoc() {
+    var json = JSON.stringify(S).replace(/</g, "\\u003c");
+    var content = HEAD_HTML +
+      '<style id="css">' + document.getElementById("css").textContent + '</style>\n\n' +
+      '<div class="wrap" id="root"><p class="notice">Chargement du projet…</p></div>\n<dialog id="editor" aria-labelledby="ed-title"></dialog>\n\n' +
+      '<script type="application/json" id="state">' + json + '<\/script>\n\n' +
+      '<script id="app">' + document.getElementById("app").textContent + '<\/script>\n';
+    return '<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>' + RESET + '</style></head><body>' + content + '</body></html>';
+  }
+  function save() {
+    if (!dirty || saving || readOnly) return;
+    if (!api) {
+      var blob = new Blob([buildDoc()], { type: "text/html" }), a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = (document.title || "projet") + ".html";
+      document.body.appendChild(a); a.click(); a.remove();
+      dirty = false; updateStatus(); return;
+    }
+    saving = true; updateStatus();
+    try { sessionStorage.setItem("tab", tab); } catch (e) {}
+    api.publish(buildDoc()).then(function () {
+      dirty = false; saving = false;
+      var st = document.getElementById("status"); if (st) st.textContent = "Enregistré · la page se recharge…";
+    }).catch(function (err) {
+      saving = false;
+      var code = err && err.code, st = document.getElementById("status");
+      if (code === "not_writer" || code === "not_granted" || code === "consent_required" || code === "capability_disabled" || code === "not_declared") { readOnly = true; updateStatus(); return; }
+      updateStatus();
+      if (!st) return;
+      st.className = "status err";
+      if (code === "conflict") st.textContent = "Quelqu'un a enregistré juste avant vous : la page se recharge avec sa version.";
+      else if (code === "rate_limited") st.textContent = "Trop d'enregistrements rapprochés : réessayez dans un moment.";
+      else st.textContent = "L'enregistrement a échoué. Réessayez dans un instant.";
+    });
+  }
+
+  render();
+  var c = window.claude;
+  if (c && typeof c.use === "function") {
+    c.use("artifact").then(function (a) { api = a; apiChecked = true; updateStatus(); }, function () { apiChecked = true; updateStatus(); });
+  } else { apiChecked = true; updateStatus(); }
+})();
+</script>
+</body></html>

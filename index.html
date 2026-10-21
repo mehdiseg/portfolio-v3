@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <title>Mehdi Seghier — Administration systèmes et réseaux · BTS SIO SISR</title>
+    <meta
+      name="description"
+      content="Portfolio de Mehdi Seghier, étudiant en BTS SIO option SISR à Nice, en recherche d'alternance d'administrateur systèmes et réseaux : projets, compétences et veille sur la cryptographie post-quantique."
+    />
+    <meta name="author" content="Mehdi Seghier" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Mehdi Seghier — Administration systèmes et réseaux" />
+    <meta
+      property="og:description"
+      content="Étudiant en BTS SIO option SISR, en recherche d'alternance d'administrateur systèmes et réseaux dans les Alpes-Maritimes."
+    />
+    <meta property="og:locale" content="fr_FR" />
+    <meta name="theme-color" content="#070b14" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <script>
+      // Thème et mode performance appliqués avant le rendu (pas de flash)
+      ;(function () {
+        var d = document.documentElement
+        try {
+          if (localStorage.getItem('theme') === 'light') d.setAttribute('data-theme', 'light')
+          if (localStorage.getItem('fx') === 'off') d.classList.add('fx-off')
+        } catch (e) {}
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <p style="padding: 2rem; font-family: sans-serif">
+        Ce portfolio utilise JavaScript. Vous pouvez consulter directement
+        <a href="documents/cv-mehdi-seghier.pdf">mon CV (PDF)</a> ou
+        <a href="veille.html">ma veille technologique</a>.
+      </p>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
